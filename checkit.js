@@ -329,14 +329,15 @@
   // but contains methods for working with the individual errors
   // created by the failed CheckIt validation object.
   CheckIt.Error = function(instance) {
+    Error.call(this, 'Validation Error');
     this.checkit  = instance;
     this.language = CheckIt.i18n[instance.language] || CheckIt.i18n['en'];
     this.message  = this.toString();
   };
 
   var ctor = function(){};
-  ctor.prototype = new Error;
-  CheckIt.Error.prototype = ctor.prototype;
+  ctor.prototype = Error.prototype;
+  CheckIt.Error.prototype = new ctor;
 
   _.extend(CheckIt.Error.prototype, {
 
