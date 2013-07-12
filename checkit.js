@@ -334,7 +334,7 @@
       var items;
       if (items = this.checkit.errors[key]) {
         return _.map(items, function(item) {
-          return this.format(key, item);
+          return this._format(key, item);
         }, this);
       }
     },
@@ -343,21 +343,8 @@
     first: function(key) {
       var item;
       if (item = this.checkit.errors[key]) {
-        return this.format(key, item[0]);
+        return this._format(key, item[0]);
       }
-    },
-
-    // Formats the particular item
-    format: function(key, item) {
-      var label = item.label || this.checkit.labels[key] || key;
-      var message = item.message || this.language[item.rule] || this.language.fallback;
-      if (message) {
-        message = message.replace(labelRegex, label);
-        for (var i = 0, l = item.param.length; i < l; i++) {
-          message = message.replace(varRegex(i+1), item.param[i]);
-        }
-      }
-      return message;
     },
 
     toString: function() {
@@ -374,6 +361,19 @@
         memo[key] = all ? this.get(key) : this.first(key);
         return memo;
       }, {}, this);
+    },
+
+    // Formats the particular item
+    _format: function(key, item) {
+      var label = item.label || this.checkit.labels[key] || key;
+      var message = item.message || this.language[item.rule] || this.language.fallback;
+      if (message) {
+        message = message.replace(labelRegex, label);
+        for (var i = 0, l = item.param.length; i < l; i++) {
+          message = message.replace(varRegex(i+1), item.param[i]);
+        }
+      }
+      return message;
     }
 
   });

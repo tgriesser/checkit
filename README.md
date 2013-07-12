@@ -45,18 +45,36 @@ Takes a rule, or array of rules to be applied against each item in the validatio
 
 The rules are optional, particularly
 
-## Validation options:
+### Validation options:
 
 If no language is specified, then the value of `CheckIt.defaultLanguage` will
 be used (defaults to "en").
 
-
-### Errors:
+## Errors:
 
 The `CheckIt.Error` object is used to handle all errors. If a validation is run synchronously,
 the validation will return false and this value will be set to the `.validationError` property
 on the currently validating instance. If the validation is run asynchronously, this error will
 be passed in rejecting the promise.
+
+### CheckIt.Error Methods
+
+**get(key)**
+
+Gets the array of validation error messages for a particular key off the validation object.
+
+**first(key)**
+
+Gets the first of validation error messages for a particular key.
+
+**toJSON([all])**
+
+Turns the validation errors into a hash. If the optional **all** is set to true, then it
+returns an array of messages rather than the first validation message for each error key.
+
+**toString()**
+
+A string saying how many errors have been triggered total in the current validation.
 
 ---
 
