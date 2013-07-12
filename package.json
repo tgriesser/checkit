@@ -1,0 +1,33 @@
+{
+  "name": "checkit",
+  "version": "0.1.0",
+  "description": "Simple validations for node and the browser.",
+  "main": "checkit.js",
+  "scripts": {
+    "test": "mocha -R spec test/index.js"
+  },
+  "directories": {
+    "test": "test"
+  },
+  "dependencies": {
+    "underscore-contrib": "0.1.x",
+    "when": ">=2.1.0"
+  },
+  "devDependencies": {
+    "mocha": "1.9.x",
+    "objectdump": ">=0.3.0",
+    "underscore": "~1.5.1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/tgriesser/checkit.git"
+  },
+  "keywords": [
+    "validation"
+  ],
+  "author": {
+    "name": "Tim Griesser",
+    "web": "https://github.com/tgriesser"
+  },
+  "license": "MIT"
+}
