@@ -2,6 +2,8 @@
 CheckIt
 ===============
 
+[![Build Status](https://travis-ci.org/tgriesser/checkit.png)](https://travis-ci.org/tgriesser/checkit)
+
 ## Simple validations for node.js and the browser
 
 The CheckIt library aims to be a lightweight, flexible, validation library,
