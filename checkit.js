@@ -390,7 +390,8 @@
       generic: 'Validation for {{label}} did not pass',
 
       // Custom Predicates
-      isRequired: 'The {{label}} is required',
+      exists: 'The {{label}} must be defined',
+      required: 'The {{label}} is required',
       isMinLength: 'The {{label}} must be at least {{var_1}} characters long',
       isMaxLength: 'The {{label}} must not exceed {{var_1}} characters long',
       isExactLength: 'The {{label}} must be exactly {{var_1}} characters long',
