@@ -264,9 +264,19 @@
       return checkNumber(val) || checkNumber(param) || parseFloat(val) > parseFloat(param);
     },
 
+    // Check if one items is greater than or equal to another
+    greaterThanEqualTo: function(val, param) {
+      return checkNumber(val) || checkNumber(param) || parseFloat(val) >= parseFloat(param);
+    },
+
     // Check if one item is less than another
     lessThan: function(val, param) {
       return checkNumber(val) || checkNumber(param) || parseFloat(val) < parseFloat(param);
+    },
+
+    // Check if one item is less than or equal to another
+    lessThanEqualTo: function(val, param) {
+      return checkNumber(val) || checkNumber(param) || parseFloat(val) <= parseFloat(param);
     },
 
     // Check if this item is an object literal.
@@ -406,8 +416,9 @@
         minLength: 'The {{label}} must be at least {{var_1}} characters long',
         maxLength: 'The {{label}} must not exceed {{var_1}} characters long',
         exactLength: 'The {{label}} must be exactly {{var_1}} characters long',
-        greaterThan: 'The {{label}} must contain a number greater than {{var_1}}',
         lessThan: 'The {{label}} must contain a number less than {{var_1}}',
+        lessThanEqualTo: 'The {{label}} must contain a number less than or equal to {{var_1}}',
+        greaterThanEqualTo: 'The {{label}} must contain a number greater than or equal to {{var_1}}',
         validEmail: 'The {{label}} must contain a valid email address',
 
         // Underscore Predicates
