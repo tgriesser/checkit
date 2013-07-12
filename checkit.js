@@ -45,11 +45,12 @@
   // Constructor for the CheckIt object.
   CheckIt.Ctor = function(target, options) {
     options || (options = {});
-    this.target     = target;
-    this._applyAll  = [];
-    this.labels     = {};
-    this.async      = _.has(options, 'async') ? options.async : CheckIt.async;
-    this.language   = _.has(options, 'language') ? options.language : CheckIt.language;
+    this.target         = target;
+    this._applyAll      = [];
+    this.labels         = {};
+    this.labelTransform = options.labelTransform || CheckIt.labelTransform;
+    this.async          = _.has(options, 'async') ? options.async : CheckIt.async;
+    this.language       = _.has(options, 'language') ? options.language : CheckIt.language;
     _.bindAll(this, '_asyncError');
   };
 
@@ -64,7 +65,7 @@
 
     // Applies a `validator` to all of the values in the current object being validated.
     applyToAll: function(validator) {
-      this._applyAll = this._applyAll.concat(validator);
+      if (validator) this._applyAll = this._applyAll.concat(validator);
       return this;
     },
 
@@ -365,8 +366,8 @@
 
     // Formats the particular item
     _format: function(key, item) {
-      var label = item.label || this.checkit.labels[key] || key;
-      var message = item.message || this.language[item.rule] || this.language.fallback;
+      var label   = item.label   || this.checkit.labels[key] || this.language.labels[key] || this.checkit.labelTransform(key);
+      var message = item.message || this.language.messages[item.rule] || this.language.messages.fallback;
       if (message) {
         message = message.replace(labelRegex, label);
         for (var i = 0, l = item.param.length; i < l; i++) {
@@ -382,48 +383,62 @@
   var labelRegex = /\{\{label\}\}/g;
   var varRegex   = function(i) { return new RegExp('{{var_' + i + '}}', 'g'); };
 
+  // Used to transform the label before using it, can be set globally or in the `options` for the CheckIt object.
+  CheckIt.labelTransform = function(label) {
+    return label;
+  };
+
   // Object containing languages for the validations... Feel free to
   // add anything to this object.
   CheckIt.i18n = {
 
     en: {
-      generic: 'Validation for {{label}} did not pass',
 
-      // Custom Predicates
-      exists: 'The {{label}} must be defined',
-      required: 'The {{label}} is required',
-      isMinLength: 'The {{label}} must be at least {{var_1}} characters long',
-      isMaxLength: 'The {{label}} must not exceed {{var_1}} characters long',
-      isExactLength: 'The {{label}} must be exactly {{var_1}} characters long',
-      isGreaterThan: 'The {{label}} must contain a number greater than {{var_1}}',
-      isLessThan: 'The {{label}} must contain a number less than {{var_1}}',
-      validEmail: 'The {{label}} must contain a valid email address',
+      labels: {},
 
-      // Underscore Predicates
-      isEqual: 'The {{label}} does not match {{var_1}}',
-      isBoolean: 'The {{label}} must be type "boolean"',
-      isEmpty: 'The {{label}} must be empty',
-      isArray: 'The {{label}} must be an array',
+      messages: {
 
-      // Underscore-contrib Predicates
-      isNumeric: 'The {{label}} must contain only numbers',
-      isInteger: 'The {{label}} must contain an integer',
-      isFloat: 'The {{label}} must contain a floating point number',
+        generic: 'Validation for {{label}} did not pass',
 
-      // Regex specific messages.
-      alpha: 'The {{label}} must only contain alphabetical characters',
-      alphaDash: 'The {{label}} must only contain alpha-numeric characters, underscores, and dashes',
-      alphaNumeric: 'The {{label}} must only contain alpha-numeric characters',
-      alphaUnderscore: 'The {{label}} must only contain alpha-numeric characters, underscores, and dashes',
-      natural: 'The {{label}} must contain only positive numbers',
-      naturalNonZero: 'The {{label}} must contain a number greater than zero',
-      ipv4: 'The {{label}} must contain a valid IPv4 string',
-      base64: 'The {{label}} must contain a base64 string',
-      luhn: 'The {{label}} must contain a valid credit card number',
+        // Custom Predicates
+        exists: 'The {{label}} must be defined',
+        required: 'The {{label}} is required',
+        minLength: 'The {{label}} must be at least {{var_1}} characters long',
+        maxLength: 'The {{label}} must not exceed {{var_1}} characters long',
+        exactLength: 'The {{label}} must be exactly {{var_1}} characters long',
+        greaterThan: 'The {{label}} must contain a number greater than {{var_1}}',
+        lessThan: 'The {{label}} must contain a number less than {{var_1}}',
+        validEmail: 'The {{label}} must contain a valid email address',
 
-      // If there is no validation provided for an item, use this generic line.
-      fallback: 'Validation for {{label}} did not pass'
+        // Underscore Predicates
+        isEqual: 'The {{label}} does not match {{var_1}}',
+        isBoolean: 'The {{label}} must be type "boolean"',
+        isEmpty: 'The {{label}} must be empty',
+        isArray: 'The {{label}} must be an array',
+
+        // Underscore-contrib Predicates
+        isNumeric: 'The {{label}} must contain only numbers',
+        isInteger: 'The {{label}} must contain an integer',
+        isFloat: 'The {{label}} must contain a floating point number',
+
+        // Regex specific messages.
+        alpha: 'The {{label}} must only contain alphabetical characters',
+        alphaDash: 'The {{label}} must only contain alpha-numeric characters, underscores, and dashes',
+        alphaNumeric: 'The {{label}} must only contain alpha-numeric characters',
+        alphaUnderscore: 'The {{label}} must only contain alpha-numeric characters, underscores, and dashes',
+        natural: 'The {{label}} must contain only positive numbers',
+        naturalNonZero: 'The {{label}} must contain a number greater than zero',
+        ipv4: 'The {{label}} must contain a valid IPv4 string',
+        base64: 'The {{label}} must contain a base64 string',
+        luhn: 'The {{label}} must contain a valid credit card number',
+
+        // If there is no validation provided for an item, use this generic line.
+        fallback: 'Validation for {{label}} did not pass'
+
+      }
+
     }
+
   };
 
   return CheckIt;
