@@ -1,7 +1,7 @@
-//     CheckIt.js 0.1.0
+//     Checkit.js 0.1.0
 //     http://tgriesser.com/checkit
 //     (c) 2013 Tim Griesser
-//     CheckIt may be freely distributed under the MIT license.
+//     Checkit may be freely distributed under the MIT license.
 (function(CheckitLib) {
 
   if (typeof exports === 'object') {
@@ -12,11 +12,11 @@
     });
   } else {
     var root = this;
-    var lastCheckIt = root.CheckIt;
-    var CheckIt     = root.CheckIt = CheckitLib(root.when, root._);
-    CheckIt.noConflict = function() {
-      root.CheckIt = lastCheckIt;
-      return CheckIt;
+    var lastCheckit = root.Checkit;
+    var Checkit     = root.Checkit = CheckitLib(root.when, root._);
+    Checkit.noConflict = function() {
+      root.Checkit = lastCheckit;
+      return Checkit;
     };
   }
 
@@ -24,37 +24,37 @@
 
   "use strict";
 
-  // The top level `CheckIt` is a passthrough to the `CheckIt.Ctor` object.
+  // The top level `Checkit` is a passthrough to the `Checkit.Ctor` object.
   // Takes a two arguments, a required `target` - the object being checked, and
   // an optional `options` hash.
-  var CheckIt = function(target, options) {
-    return new CheckIt.Ctor(target, options);
+  var Checkit = function(target, options) {
+    return new Checkit.Ctor(target, options);
   };
 
   // Sets the default language for all validations, defaults to "en" which
   // is included with the library by default. To add additional languages,
-  // add them to the `CheckIt.i18n` object.
-  CheckIt.language = 'en';
+  // add them to the `Checkit.i18n` object.
+  Checkit.language = 'en';
 
   // Determines (globally) whether the promises being `run` are asynchronous. Set to `true` by
-  // default, unless it isn't defined, so we can use this nicely in the browser if
-  // we haven't included `when` and don't really need async validations since
-  // it's just about simple validations... all the fun stuff happens on the server anyway.
-  CheckIt.async = when !== void 0;
+  // default, unless `when` isn't defined, so we can use this quite simply in the browser where
+  // we might not need async validations anyway.
+  Checkit.async = (when !== void 0);
 
-  // Constructor for the CheckIt object.
-  CheckIt.Ctor = function(target, options) {
+  // Constructor for the Checkit object.
+  Checkit.Ctor = function(target, options) {
     options || (options = {});
     this.target         = target;
     this._applyAll      = [];
     this.labels         = {};
-    this.labelTransform = options.labelTransform || CheckIt.labelTransform;
-    this.async          = _.has(options, 'async') ? options.async : CheckIt.async;
-    this.language       = _.has(options, 'language') ? options.language : CheckIt.language;
+    this.labelTransform = Checkit.labelTransform;
+    this.async          = Checkit.async;
+    this.language       = Checkit.language;
+    this._prepOptions(options);
     _.bindAll(this, '_asyncError');
   };
 
-  _.extend(CheckIt.Ctor.prototype, {
+  _.extend(Checkit.Ctor.prototype, {
 
     // Sets any labels for the current validation values,
     // so error messages aren't weird looking and such.
@@ -63,32 +63,29 @@
       return this;
     },
 
-    // Applies a `validator` to all of the values in the current object being validated.
-    applyToAll: function(validator) {
-      if (validator) this._applyAll = this._applyAll.concat(validator);
-      return this;
-    },
-
     // Runs a validation block, returning a deferred object, or
     // a boolean if the validations are run asynchronously.
-    run: function(validations) {
+    run: function(validations, options) {
+      if (options) this._prepOptions(options);
       this.validations = this._prepValidations(validations || {});
       return this.async ? this._runAsync() : this._runSync();
+    },
+
+    // Preps any options sent in the
+    _prepOptions: function(options) {
+      this.labelTransform = _.has(options, 'labelTransform') ? options.labelTransform : this.labelTransform;
+      this.async    = _.has(options, 'async') ? options.async : this.async;
+      this.language = _.has(options, 'language') ? options.language : this.language;
+      this.strip    = _.has(options, 'strip') ? options.strip : this.strip;
     },
 
     // Preps the validations being sent to the `run` block, to standardize
     // the format and allow for maximum flexibility when passing to the
     // validation blocks.
     _prepValidations: function(validations) {
-      var key;
-      if (this._applyAll.length > 0) {
-        for (key in this.target) validations[key] || (validations[key] = []);
-      }
-      for (key in validations) {
+      for (var key in validations) {
         var validation = validations[key];
-        if (!_.isArray(validation)) validation = [validation];
-        if (this._applyAll.length > 0) validation = validation.concat(this._applyAll);
-        validations[key] = validation;
+        if (!_.isArray(validation)) validations[key] = validation = [validation];
         for (var i = 0, l = validation.length; i < l; i++) {
           if (!this.isLiteral(validation[i])) {
             validation[i] = this._assembleValidation(validation[i]);
@@ -152,7 +149,7 @@
           }
         }
       }
-      return (!_.isEmpty(errors) ? when.reject(new CheckIt.Error(this)) : this);
+      return (!_.isEmpty(errors) ? when.reject(new Checkit.Error(this)) : this);
     },
 
     // Processes the values synchronously, adding an error to the stack when a
@@ -170,9 +167,9 @@
         }
       }
       // If `this.errors` isn't empty, go ahead and set the `validationError` property
-      // on this instance to a new `CheckIt.Error` object.
+      // on this instance to a new `Checkit.Error` object.
       if (!_.isEmpty(this.errors)) {
-        this.validationError = new CheckIt.Error(this);
+        this.validationError = new Checkit.Error(this);
         return false;
       }
       return true;
@@ -293,7 +290,7 @@
     if (!_.isNumeric(val)) throw new Error("The validator argument must be a valid number");
   };
 
-  // Mixin all relevant functions to be added from underscore & underscore-contrib to the CheckIt prototype
+  // Mixin all relevant functions to be added from underscore & underscore-contrib to the Checkit prototype
 
   // Predicates from the `underscore.js` library.
   var basePredicates = ['isEmpty', 'isEqual', 'isElement',
@@ -305,13 +302,13 @@
   'isEven', 'isOdd', 'isPositive', 'isNegative', 'isValidDate', 'isNumeric', 'isInteger', 'isFloat',
   'isIncreasing', 'isDecreasing'];
 
-  // Add each of the underscore and underscore-contrib functions to the `CheckIt.prototype`,
+  // Add each of the underscore and underscore-contrib functions to the `Checkit.prototype`,
   _.each(basePredicates.concat(contribPredicates), function(method) {
-    CheckIt.Ctor.prototype[method] = _[method];
+    Checkit.Ctor.prototype[method] = _[method];
   });
 
   // Standard regular expression validators.
-  var regex = CheckIt.regex = {
+  var regex = Checkit.regex = {
     integer: /^\-?[0-9]+$/,
     email: /^[a-z0-9._%+\-]+@[a-z0-9.\-]+\.[a-z]{2,6}$/i,
     alpha: /^[a-z]+$/i,
@@ -327,19 +324,19 @@
 
   // An object that inherits from the `Error` prototype,
   // but contains methods for working with the individual errors
-  // created by the failed CheckIt validation object.
-  CheckIt.Error = function(instance) {
+  // created by the failed Checkit validation object.
+  Checkit.Error = function(instance) {
     Error.call(this, 'Validation Error');
     this.checkit  = instance;
-    this.language = CheckIt.i18n[instance.language] || CheckIt.i18n['en'];
+    this.language = Checkit.i18n[instance.language] || Checkit.i18n['en'];
     this.message  = this.toString();
   };
 
   var ctor = function(){};
   ctor.prototype = Error.prototype;
-  CheckIt.Error.prototype = new ctor;
+  Checkit.Error.prototype = new ctor;
 
-  _.extend(CheckIt.Error.prototype, {
+  _.extend(Checkit.Error.prototype, {
 
     // Gets & formats the validation error message for an `item`.
     get: function(key) {
@@ -359,11 +356,10 @@
       }
     },
 
+    // Convert the current error object toString, by stringifying the JSON representation
+    // of the object.
     toString: function() {
-      return 'The validation failed with ' + _.reduce(this.checkit.errors, function(memo, val) {
-        memo += val.length;
-        return memo;
-      }, 0) + ' errors.';
+      return '{validationErrors: ' + JSON.stringify(this) + '}';
     },
 
     // Creates a JSON object of the validations, if `true` is passed to `all` - it will
@@ -394,22 +390,20 @@
   var labelRegex = /\{\{label\}\}/g;
   var varRegex   = function(i) { return new RegExp('{{var_' + i + '}}', 'g'); };
 
-  // Used to transform the label before using it, can be set globally or in the `options` for the CheckIt object.
-  CheckIt.labelTransform = function(label) {
+  // Used to transform the label before using it, can be set globally or in the `options` for the Checkit object.
+  Checkit.labelTransform = function(label) {
     return label;
   };
 
   // Object containing languages for the validations... Feel free to
   // add anything to this object.
-  CheckIt.i18n = {
+  Checkit.i18n = {
 
     en: {
 
       labels: {},
 
       messages: {
-
-        generic: 'Validation for {{label}} did not pass',
 
         // Custom Predicates
         exists: 'The {{label}} must be defined',
@@ -448,11 +442,9 @@
         fallback: 'Validation for {{label}} did not pass'
 
       }
-
     }
-
   };
 
-  return CheckIt;
+  return Checkit;
 
 }));
