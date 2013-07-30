@@ -10,8 +10,8 @@
     "test": "test"
   },
   "dependencies": {
-    "underscore-contrib": "0.1.x",
-    "when": ">=2.1.0"
+    "when": "~2.2.1",
+    "underscore": "~1.5.1"
   },
   "devDependencies": {
     "mocha": "1.9.x",

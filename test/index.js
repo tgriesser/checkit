@@ -41,7 +41,7 @@ var suite = function(type) {
 
       it('fails with an invalid email', function(ok) {
         handler(checkit.run({emailFail: ['validEmail']}), ok, false, null, function(err) {
-          equal(err.get('emailFail'), 'The emailFail must contain a valid email address');
+          equal(err.get('emailFail'), 'The emailFail must be a valid email address');
         });
       });
 

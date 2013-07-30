@@ -87,7 +87,7 @@
         var validation = validations[key];
         if (!_.isArray(validation)) validations[key] = validation = [validation];
         for (var i = 0, l = validation.length; i < l; i++) {
-          if (!this.isLiteral(validation[i])) {
+          if (!this.isPlainObject(validation[i])) {
             validation[i] = this._assembleValidation(validation[i]);
           }
         }
@@ -199,6 +199,8 @@
             result = this[rule].apply(this, param);
           } else if (regex[rule]) {
             result = regex[rule].test(value);
+          } else if (_[rule]) {
+            result = _[rule].apply(_, param);
           } else {
             throw new Error('No validation defined for ' + rule);
           }
@@ -276,8 +278,8 @@
       return checkNumber(val) || checkNumber(param) || parseFloat(val) <= parseFloat(param);
     },
 
-    // Check if this item is an object literal.
-    isLiteral: function(val) {
+    // Check if this item is a plain object.
+    isPlainObject: function(val) {
       return (_.isObject(val) && !_.isFunction(val) && !_.isArray(val));
     }
 
@@ -287,25 +289,11 @@
     if (!_.isInteger(val)) throw new Error("The validator argument must be a valid integer");
   };
   var checkNumber = function(val) {
-    if (!_.isNumeric(val)) throw new Error("The validator argument must be a valid number");
+    if (!isNumeric(val)) throw new Error("The validator argument must be a valid number");
   };
-
-  // Mixin all relevant functions to be added from underscore & underscore-contrib to the Checkit prototype
-
-  // Predicates from the `underscore.js` library.
-  var basePredicates = ['isEmpty', 'isEqual', 'isElement',
-  'isArray', 'isObject', 'isArguments', 'isFunction', 'isString', 'isNumber', 'isFinite',
-  'isBoolean', 'isDate', 'isRegExp', 'isNaN', 'isNull', 'isUndefined'];
-
-  // Predicates from the `underscore-contrib.js` library.
-  var contribPredicates = ['isInstanceOf', 'isAssociative', 'isIndexed', 'isSequential', 'isZero',
-  'isEven', 'isOdd', 'isPositive', 'isNegative', 'isValidDate', 'isNumeric', 'isInteger', 'isFloat',
-  'isIncreasing', 'isDecreasing'];
-
-  // Add each of the underscore and underscore-contrib functions to the `Checkit.prototype`,
-  _.each(basePredicates.concat(contribPredicates), function(method) {
-    Checkit.Ctor.prototype[method] = _[method];
-  });
+  var isNumeric = function(val) {
+    return !isNaN(parseFloat(val)) && isFinite(val);
+  };
 
   // Standard regular expression validators.
   var regex = Checkit.regex = {
@@ -411,10 +399,10 @@
         minLength: 'The {{label}} must be at least {{var_1}} characters long',
         maxLength: 'The {{label}} must not exceed {{var_1}} characters long',
         exactLength: 'The {{label}} must be exactly {{var_1}} characters long',
-        lessThan: 'The {{label}} must contain a number less than {{var_1}}',
-        lessThanEqualTo: 'The {{label}} must contain a number less than or equal to {{var_1}}',
-        greaterThanEqualTo: 'The {{label}} must contain a number greater than or equal to {{var_1}}',
-        validEmail: 'The {{label}} must contain a valid email address',
+        lessThan: 'The {{label}} must be a number less than {{var_1}}',
+        lessThanEqualTo: 'The {{label}} must be a number less than or equal to {{var_1}}',
+        greaterThanEqualTo: 'The {{label}} must be a number greater than or equal to {{var_1}}',
+        validEmail: 'The {{label}} must be a valid email address',
 
         // Underscore Predicates
         isEqual: 'The {{label}} does not match {{var_1}}',
@@ -423,20 +411,20 @@
         isArray: 'The {{label}} must be an array',
 
         // Underscore-contrib Predicates
-        isNumeric: 'The {{label}} must contain only numbers',
-        isInteger: 'The {{label}} must contain an integer',
-        isFloat: 'The {{label}} must contain a floating point number',
+        isNumeric: 'The {{label}} must be a number',
+        isInteger: 'The {{label}} must be an integer',
+        isFloat:   'The {{label}} must be a floating point number',
 
         // Regex specific messages.
         alpha: 'The {{label}} must only contain alphabetical characters',
         alphaDash: 'The {{label}} must only contain alpha-numeric characters, underscores, and dashes',
         alphaNumeric: 'The {{label}} must only contain alpha-numeric characters',
         alphaUnderscore: 'The {{label}} must only contain alpha-numeric characters, underscores, and dashes',
-        natural: 'The {{label}} must contain only positive numbers',
-        naturalNonZero: 'The {{label}} must contain a number greater than zero',
-        ipv4: 'The {{label}} must contain a valid IPv4 string',
-        base64: 'The {{label}} must contain a base64 string',
-        luhn: 'The {{label}} must contain a valid credit card number',
+        natural: 'The {{label}} must be a positive number',
+        naturalNonZero: 'The {{label}} must be a number greater than zero',
+        ipv4: 'The {{label}} must be a valid IPv4 string',
+        base64: 'The {{label}} must be a base64 string',
+        luhn: 'The {{label}} must be a valid credit card number',
 
         // If there is no validation provided for an item, use this generic line.
         fallback: 'Validation for {{label}} did not pass'

@@ -9,8 +9,7 @@ CheckIt
 The CheckIt library aims to be a lightweight, flexible, validation library,
 with no dependence on the DOM, targeting both Node.js and the browser.
 
-CheckIt depends on [underscore.js](http://underscorejs.org), the underscore.function.predicates.js
-of [underscore-contrib](https://github.com/documentcloud/underscore-contrib) and (optionally)
+CheckIt depends on [underscore.js](http://underscorejs.org), and (optionally)
 [when.js](https://github.com/cujojs/when) for using the library asynchronously with promises. If you
 wish to use when, but would rather use browser globals than a package manager, a shimmed version of
 when is included in the `/lib` directory for your convenience.
