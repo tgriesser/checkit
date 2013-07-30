@@ -1,6 +1,6 @@
 var when      = require('when');
 var _         = require('underscore-contrib');
-var CheckIt   = require('../checkit');
+var Checkit   = require('../checkit');
 var testBlock = require('./block');
 var equal     = require('assert').equal;
 var deepEqual = require('assert').deepEqual;
@@ -12,8 +12,8 @@ var suite = function(type) {
     var checkit;
 
     beforeEach(function() {
-      if (type === 'sync') CheckIt.async = false;
-      checkit = CheckIt(testBlock);
+      if (type === 'sync') Checkit.async = false;
+      checkit = Checkit(testBlock);
     });
 
     var handler = function(dfd, ok, syncVal, onFulfilled, onRejected) {
@@ -36,7 +36,7 @@ var suite = function(type) {
       });
 
       it('does not run on an empty input', function(ok) {
-        handler(CheckIt({}).run({email: ['validEmail']}), ok);
+        handler(Checkit({}).run({email: ['validEmail']}), ok);
       });
 
       it('fails with an invalid email', function(ok) {
@@ -171,6 +171,15 @@ var suite = function(type) {
           isEmptyObject: ['isEmpty'],
           isEmptyNull:   ['isEmpty']
         }), ok);
+      });
+
+    });
+
+    describe('Checkit.Error', function () {
+
+      it('should be an instanceof Error', function () {
+        var error = new Checkit.Error(checkit);
+        equal((error instanceof Error), true);
       });
 
     });
