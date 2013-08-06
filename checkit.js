@@ -2,27 +2,9 @@
 //     http://tgriesser.com/checkit
 //     (c) 2013 Tim Griesser
 //     Checkit may be freely distributed under the MIT license.
-(function(CheckitLib) {
+(function(define) { "use strict";
 
-  if (typeof exports === 'object') {
-    module.exports = CheckitLib(require('when'), require('underscore-contrib'));
-  } else if (typeof define === "function" && define.amd) {
-    define(['when', 'underscore'], function(when, _) {
-      return CheckitLib(when, _);
-    });
-  } else {
-    var root = this;
-    var lastCheckit = root.Checkit;
-    var Checkit     = root.Checkit = CheckitLib(root.when, root._);
-    Checkit.noConflict = function() {
-      root.Checkit = lastCheckit;
-      return Checkit;
-    };
-  }
-
-}).call(this, (function(when, _) {
-
-  "use strict";
+define(function(when, _) {
 
   // The top level `Checkit` is a passthrough to the `Checkit.Ctor` object.
   // Takes a two arguments, a required `target` - the object being checked, and
@@ -47,12 +29,11 @@
     this.target         = target;
     this._applyAll      = [];
     this.labels         = {};
-    this.labelTransform = Checkit.labelTransform;
-    this.async          = Checkit.async;
-    this.language       = Checkit.language;
     this._prepOptions(options);
     _.bindAll(this, '_asyncError');
   };
+
+  var checkitOpts = ['labelTransform', 'async', 'language'];
 
   _.extend(Checkit.Ctor.prototype, {
 
@@ -64,12 +45,11 @@
       return this.async ? this._runAsync() : this._runSync();
     },
 
-    // Preps any options sent in the
+    // Preps any pre-defined options sent in the constructor.
     _prepOptions: function(options) {
-      this.labelTransform = _.has(options, 'labelTransform') ? options.labelTransform : this.labelTransform;
-      this.async    = _.has(options, 'async') ? options.async : this.async;
-      this.language = _.has(options, 'language') ? options.language : this.language;
-      this.strip    = _.has(options, 'strip') ? options.strip : this.strip;
+      _.each(checkitOpts, function(key) {
+        this[key] = _.has(options, key) ? options[key] : (this[key] || Checkit[key]);
+      }, this);
     },
 
     // Preps the validations being sent to the `run` block, to standardize
@@ -427,4 +407,34 @@
 
   return Checkit;
 
-}));
+});
+
+// Boilerplate definition block... get the correct dependencies and initialize everything.
+})(function(CheckitLib) {
+
+  // Node.js
+  if (typeof exports === 'object') {
+
+    module.exports = CheckitLib(require('when'), require('underscore-contrib'));
+
+  // Require.js / AMD
+  } else if (typeof define === "function" && define.amd) {
+
+    define('checkit', ['when', 'underscore'], function(when, _) {
+      return CheckitLib(when, _);
+    });
+
+  // Browser Globals
+  } else {
+
+    var root = this;
+    var lastCheckit = root.Checkit;
+    var Checkit     = root.Checkit = CheckitLib(root.when, root._);
+    Checkit.noConflict = function() {
+      root.Checkit = lastCheckit;
+      return Checkit;
+    };
+
+  }
+
+});
