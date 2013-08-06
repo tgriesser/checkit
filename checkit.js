@@ -1,4 +1,4 @@
-//     Checkit.js 0.1.0
+//     Checkit.js 0.2.0
 //     http://tgriesser.com/checkit
 //     (c) 2013 Tim Griesser
 //     Checkit may be freely distributed under the MIT license.
@@ -55,13 +55,6 @@
   };
 
   _.extend(Checkit.Ctor.prototype, {
-
-    // Sets any labels for the current validation values,
-    // so error messages aren't weird looking and such.
-    setLabels: function(labels) {
-      _.extend(this.labels, labels);
-      return this;
-    },
 
     // Runs a validation block, returning a deferred object, or
     // a boolean if the validations are run asynchronously.
@@ -282,7 +275,6 @@
     isPlainObject: function(val) {
       return (_.isObject(val) && !_.isFunction(val) && !_.isArray(val));
     }
-
   });
 
   var checkInt = function(val) {
@@ -320,7 +312,7 @@
     this.message  = this.toString();
   };
 
-  var ctor = function(){};
+  var ctor = function(){ this.constructor = Error; };
   ctor.prototype = Error.prototype;
   Checkit.Error.prototype = new ctor;
 

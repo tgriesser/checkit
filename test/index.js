@@ -1,5 +1,5 @@
 var when      = require('when');
-var _         = require('underscore-contrib');
+var _         = require('underscore');
 var Checkit   = require('../checkit');
 var testBlock = require('./block');
 var equal     = require('assert').equal;
@@ -152,7 +152,6 @@ var suite = function(type) {
       });
 
     });
-
 
     describe('arguments', function() {
 

@@ -1,6 +1,6 @@
 {
   "name": "checkit",
-  "version": "0.1.5",
+  "version": "0.2.0",
   "description": "Simple validations for node and the browser.",
   "main": "checkit.js",
   "scripts": {
@@ -14,7 +14,7 @@
     "underscore": "~1.5.1"
   },
   "devDependencies": {
-    "mocha": "1.9.x",
+    "mocha": "~1.12.0",
     "objectdump": ">=0.3.0",
     "underscore": "~1.5.1"
   },
