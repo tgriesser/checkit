@@ -254,17 +254,19 @@ define(function(when, _) {
     // Check if this item is a plain object.
     isPlainObject: function(val) {
       return (_.isObject(val) && !_.isFunction(val) && !_.isArray(val));
+    },
+
+    isNumeric: function(val) {
+      return !isNaN(parseFloat(val)) && isFinite(val);
     }
+
   });
 
   var checkInt = function(val) {
     if (!_.isInteger(val)) throw new Error("The validator argument must be a valid integer");
   };
   var checkNumber = function(val) {
-    if (!isNumeric(val)) throw new Error("The validator argument must be a valid number");
-  };
-  var isNumeric = function(val) {
-    return !isNaN(parseFloat(val)) && isFinite(val);
+    if (!Checkit.Ctor.prototype.isNumeric(val)) throw new Error("The validator argument must be a valid number");
   };
 
   // Standard regular expression validators.
@@ -382,11 +384,6 @@ define(function(when, _) {
         isEmpty: 'The {{label}} must be empty',
         isArray: 'The {{label}} must be an array',
 
-        // Underscore-contrib Predicates
-        isNumeric: 'The {{label}} must be a number',
-        isInteger: 'The {{label}} must be an integer',
-        isFloat:   'The {{label}} must be a floating point number',
-
         // Regex specific messages.
         alpha: 'The {{label}} must only contain alphabetical characters',
         alphaDash: 'The {{label}} must only contain alpha-numeric characters, underscores, and dashes',
@@ -415,7 +412,7 @@ define(function(when, _) {
   // Node.js
   if (typeof exports === 'object') {
 
-    module.exports = CheckitLib(require('when'), require('underscore-contrib'));
+    module.exports = CheckitLib(require('when'), require('underscore'));
 
   // Require.js / AMD
   } else if (typeof define === "function" && define.amd) {
