@@ -14,9 +14,11 @@
     "underscore": "~1.5.1"
   },
   "devDependencies": {
-    "mocha": "~1.12.0",
-    "objectdump": ">=0.3.0",
-    "underscore": "~1.5.1"
+    "mocha": "~1.13.0",
+    "objectdump": "~0.3.0",
+    "underscore": "~1.5.1",
+    "grunt": "~0.4.1",
+    "grunt-release": "~0.5.1"
   },
   "repository": {
     "type": "git",
