@@ -1,0 +1,1053 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+  <title>checkit.js</title>
+  <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+  <meta name="viewport" content="width=device-width, target-densitydpi=160dpi, initial-scale=1.0; maximum-scale=1.0; user-scalable=0;">
+  <link rel="stylesheet" media="all" href="docco.css" />
+</head>
+<body>
+  <div id="container">
+    <div id="background"></div>
+    
+    <ul class="sections">
+        
+          <li id="title">
+              <div class="annotation">
+                  <h1>checkit.js</h1>
+              </div>
+          </li>
+        
+        
+        
+        <li id="section-1">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-1">&#182;</a>
+              </div>
+              <pre><code>Checkit.js 0.2.0
+http://tgriesser.com/checkit
+(c) 2013 Tim Griesser
+Checkit may be freely distributed under the MIT license.</code></pre>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>(<span class="keyword">function</span>(define) {
+
+<span class="string">"use strict"</span>;
+
+define(<span class="keyword">function</span>(when, _) {</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-2">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-2">&#182;</a>
+              </div>
+              <p>The top level <code>Checkit</code> is a passthrough to the <code>Checkit.Ctor</code> object.
+Takes a two arguments, a required <code>target</code> - the object being checked, and
+an optional <code>options</code> hash.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  <span class="keyword">var</span> Checkit = <span class="keyword">function</span>(target, options) {
+    <span class="keyword">return</span> <span class="keyword">new</span> Checkit.Ctor(target, options);
+  };</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-3">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-3">&#182;</a>
+              </div>
+              <p>Sets the default language for all validations, defaults to &quot;en&quot; which
+is included with the library by default. To add additional languages,
+add them to the <code>Checkit.i18n</code> object.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  Checkit.language = <span class="string">'en'</span>;</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-4">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-4">&#182;</a>
+              </div>
+              <p>Determines (globally) whether the promises being <code>run</code> are asynchronous. Set to <code>true</code> by
+default, unless <code>when</code> isn&#39;t defined, so we can use this quite simply in the browser where
+we might not need async validations anyway.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  Checkit.async = (when != <span class="literal">null</span>);</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-5">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-5">&#182;</a>
+              </div>
+              <p>Constructor for the Checkit object.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  Checkit.Ctor = <span class="keyword">function</span>(target, options) {
+    options        = options || {};
+    <span class="keyword">this</span>.target    = target;
+    <span class="keyword">this</span>.labels    = {};
+    <span class="keyword">this</span>._prepOptions(options);
+    _.bindAll(<span class="keyword">this</span>, <span class="string">'_asyncError'</span>);
+  };
+
+  <span class="keyword">var</span> checkitOpts = [<span class="string">'labelTransform'</span>, <span class="string">'async'</span>, <span class="string">'language'</span>];
+
+  Checkit.Ctor.prototype = {</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-6">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-6">&#182;</a>
+              </div>
+              <p>Runs a validation block, returning a deferred object, or
+a boolean if the validations are run asynchronously.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    run: <span class="keyword">function</span>(validations, options) {
+      <span class="keyword">if</span> (options) <span class="keyword">this</span>._prepOptions(options);
+      <span class="keyword">this</span>.validations = <span class="keyword">this</span>._prepValidations(validations || {});
+      <span class="keyword">return</span> <span class="keyword">this</span>.async ? <span class="keyword">this</span>._runAsync() : <span class="keyword">this</span>._runSync();
+    },</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-7">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-7">&#182;</a>
+              </div>
+              <p>Preps any pre-defined options sent in the constructor.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    _prepOptions: <span class="keyword">function</span>(options) {
+      _.each(checkitOpts, <span class="keyword">function</span>(key) {
+        <span class="keyword">this</span>[key] = _.has(options, key) ? options[key] : (<span class="keyword">this</span>[key] || Checkit[key]);
+      }, <span class="keyword">this</span>);
+    },</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-8">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-8">&#182;</a>
+              </div>
+              <p>Preps the validations being sent to the <code>run</code> block, to standardize
+the format and allow for maximum flexibility when passing to the
+validation blocks.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    _prepValidations: <span class="keyword">function</span>(validations) {
+      <span class="keyword">for</span> (<span class="keyword">var</span> key <span class="keyword">in</span> validations) {
+        <span class="keyword">var</span> validation = validations[key];
+        <span class="keyword">if</span> (!_.isArray(validation)) validations[key] = validation = [validation];
+        <span class="keyword">for</span> (<span class="keyword">var</span> i = <span class="number">0</span>, l = validation.length; i &lt; l; i++) {
+          <span class="keyword">if</span> (!<span class="keyword">this</span>.isPlainObject(validation[i])) {
+            validation[i] = <span class="keyword">this</span>._assembleValidation(validation[i]);
+          }
+        }
+      }
+      <span class="keyword">return</span> validations;
+    },</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-9">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-9">&#182;</a>
+              </div>
+              <p>Turns the current validation item into an object literal,
+containing the rule, any arguments split from the <code>:</code> delimeter,
+and the</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    _assembleValidation: <span class="keyword">function</span>(validation) {
+      <span class="keyword">if</span> (_.isString(validation)) {
+        <span class="keyword">var</span> splitRule = validation.split(<span class="string">':'</span>);
+        <span class="keyword">return</span> {rule: splitRule[<span class="number">0</span>], param: _.rest(splitRule)};
+      } <span class="keyword">else</span> <span class="keyword">if</span> (_.isFunction(validation)) {
+        <span class="keyword">return</span> {rule: validation, param: []};
+      }
+    },</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-10">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-10">&#182;</a>
+              </div>
+              <p>Asynchronously runs a block of validations,
+returning a deferred object.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    _runAsync: <span class="keyword">function</span>() {
+      <span class="keyword">if</span> (!when) <span class="keyword">throw</span> <span class="keyword">new</span> Error(<span class="string">'The when.js library is required to run asynchronous validations, please require it.'</span>);
+      <span class="keyword">var</span> key, pending = [];
+      <span class="keyword">var</span> validations = <span class="keyword">this</span>.validations;
+      <span class="keyword">for</span> (key <span class="keyword">in</span> validations) {
+        <span class="keyword">var</span> validation = validations[key];
+        <span class="keyword">for</span> (<span class="keyword">var</span> i = <span class="number">0</span>, l = validation.length; i &lt; l; i++) {
+          pending.push(<span class="keyword">this</span>._processItem(validation[i], <span class="keyword">this</span>.target[key]));
+        }
+      }
+      <span class="keyword">return</span> when.settle(pending).then(<span class="keyword">this</span>._asyncError);
+    },</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-11">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-11">&#182;</a>
+              </div>
+              <p>Processes the errors in an async validation after all of the validations
+are guarenteed to be settled. If the result is explicitly false or a rejected
+promise, then they are considered to be failures and will be added to the &quot;errors&quot;
+stack for the current object.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    _asyncError: <span class="keyword">function</span>() {
+      <span class="keyword">var</span> errors = <span class="keyword">this</span>.errors = {};
+      <span class="keyword">var</span> validations = <span class="keyword">this</span>.validations;
+      <span class="keyword">for</span> (<span class="keyword">var</span> key <span class="keyword">in</span> validations) {
+        <span class="keyword">var</span> line = validations[key];
+        <span class="keyword">for</span> (<span class="keyword">var</span> i = <span class="number">0</span>, l = line.length; i &lt; l; i++) {
+          <span class="keyword">var</span> result = line[i].result;
+          <span class="keyword">if</span> (_.isBoolean(result)) {
+            <span class="keyword">if</span> (result === <span class="literal">false</span>) {
+              (errors[key] || (errors[key] = [])).push(line[i]);
+            }
+          }</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-12">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-12">&#182;</a>
+              </div>
+              <p>If this is a promise, inspect &amp; set the value properly.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>          <span class="keyword">if</span> (result.inspect) {
+            <span class="keyword">var</span> inspected = result.inspect();
+            <span class="keyword">if</span> (inspected.state === <span class="string">'fulfilled'</span>) line[i].result = inspected.value;
+            <span class="keyword">if</span> (inspected.state === <span class="string">'rejected'</span>) {
+              line[i].result = inspected.reason;
+              (errors[key] || (errors[key] = [])).push(line[i]);
+            }
+          }
+        }
+      }
+      <span class="keyword">return</span> (!_.isEmpty(errors) ? when.reject(<span class="keyword">new</span> Checkit.Error(<span class="keyword">this</span>)) : <span class="keyword">this</span>);
+    },</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-13">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-13">&#182;</a>
+              </div>
+              <p>Processes the values synchronously, adding an error to the stack when a
+falsy value occurs.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    _runSync: <span class="keyword">function</span>() {
+      <span class="keyword">var</span> validations = <span class="keyword">this</span>.validations;
+      <span class="keyword">var</span> errors = <span class="keyword">this</span>.errors = {};
+      <span class="keyword">for</span> (<span class="keyword">var</span> key <span class="keyword">in</span> validations) {
+        <span class="keyword">var</span> line = validations[key];
+        <span class="keyword">for</span> (<span class="keyword">var</span> i = <span class="number">0</span>, l = line.length; i &lt; l; i++) {
+          <span class="keyword">var</span> processed = <span class="keyword">this</span>._processItem(line[i], <span class="keyword">this</span>.target[key]);
+          <span class="keyword">if</span> (processed === <span class="literal">false</span> || processed <span class="keyword">instanceof</span> Error) {
+            (errors[key] || (errors[key] = [])).push(line[i]);
+          }
+        }
+      }</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-14">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-14">&#182;</a>
+              </div>
+              <p>If <code>this.errors</code> isn&#39;t empty, go ahead and set the <code>validationError</code> property
+on this instance to a new <code>Checkit.Error</code> object.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>      <span class="keyword">if</span> (!_.isEmpty(<span class="keyword">this</span>.errors)) {
+        <span class="keyword">this</span>.validationError = <span class="keyword">new</span> Checkit.Error(<span class="keyword">this</span>);
+        <span class="keyword">return</span> <span class="literal">false</span>;
+      }
+      <span class="keyword">return</span> <span class="literal">true</span>;
+    },</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-15">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-15">&#182;</a>
+              </div>
+              <p>Processes an individual item in the validation collection for the current
+validation object. Returns the value from the completed validation, which will
+be a boolean, or potentially a promise if the current object is an async validation.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    _processItem: <span class="keyword">function</span>(currentValidation, value) {
+      <span class="keyword">var</span> result, rule = currentValidation.rule;
+      <span class="keyword">var</span> param = [value].concat(currentValidation.param);</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-16">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-16">&#182;</a>
+              </div>
+              <p>If the rule isn&#39;t an existence / required check, return
+true if the value doesn&#39;t exist.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>      <span class="keyword">if</span> (rule !== <span class="string">'exists'</span> &amp;&amp; rule !== <span class="string">'required'</span>) {
+        <span class="keyword">if</span> (value === <span class="string">''</span> || value == <span class="literal">null</span>) result = <span class="literal">true</span>;
+      }
+
+      <span class="keyword">if</span> (!result) {</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-17">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-17">&#182;</a>
+              </div>
+              <p>Need to try/catch block this whole deal, since
+we&#39;re not guarenteed to be inside of promise land, can&#39;t have
+any uncaught exceptions.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>        <span class="keyword">try</span> {
+          <span class="keyword">if</span> (_.isFunction(rule)) {
+            result = rule.apply(<span class="keyword">this</span>, param);
+          } <span class="keyword">else</span> <span class="keyword">if</span> (<span class="keyword">this</span>[rule]) {
+            result = <span class="keyword">this</span>[rule].apply(<span class="keyword">this</span>, param);
+          } <span class="keyword">else</span> <span class="keyword">if</span> (regex[rule]) {
+            result = regex[rule].test(value);
+          } <span class="keyword">else</span> <span class="keyword">if</span> (_[rule]) {
+            result = _[rule].apply(_, param);
+          } <span class="keyword">else</span> {
+            <span class="keyword">throw</span> <span class="keyword">new</span> Error(<span class="string">'No validation defined for '</span> + rule);
+          }
+        } <span class="keyword">catch</span> (e) {
+          result = (<span class="keyword">this</span>.async ? when.reject(e) : e);
+        }
+      }
+
+      <span class="keyword">return</span> currentValidation.result = result;
+    },</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-18">
+            <div class="annotation">
+              
+              <div class="pilwrap for-h2">
+                <a class="pilcrow" href="#section-18">&#182;</a>
+              </div>
+              <h2>Validations</h2>
+
+            </div>
+            
+        </li>
+        
+        
+        <li id="section-19">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-19">&#182;</a>
+              </div>
+              <p>Key must not be <code>undefined</code>.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    exists: <span class="keyword">function</span>(val) {
+      <span class="keyword">return</span> val !== <span class="keyword">void</span> <span class="number">0</span>;
+    },</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-20">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-20">&#182;</a>
+              </div>
+              <p>Field is required and not empty</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    required: <span class="keyword">function</span>(val) {
+      <span class="keyword">return</span> (val != <span class="literal">null</span> &amp;&amp; val !== <span class="string">''</span> ? <span class="literal">true</span> : <span class="literal">false</span>);
+    },</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-21">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-21">&#182;</a>
+              </div>
+              <p>Check that an item contains another item</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    contains: <span class="keyword">function</span>(val, item) {
+      <span class="keyword">if</span> (_.isString(val)) <span class="keyword">return</span> val.indexOf(item) !== -<span class="number">1</span>;
+      <span class="keyword">if</span> (_.isArray(val))  <span class="keyword">return</span> _.indexOf(val, item) !== -<span class="number">1</span>;
+      <span class="keyword">if</span> (_.isObject(val)) <span class="keyword">return</span> _.has(val, item);
+      <span class="keyword">return</span> <span class="literal">false</span>;
+    },</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-22">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-22">&#182;</a>
+              </div>
+              <p>Check that an item is a valid email</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    validEmail: <span class="keyword">function</span>(val) {
+      <span class="keyword">return</span> regex.email.test(val);
+    },</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-23">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-23">&#182;</a>
+              </div>
+              <p>Matches another named field in the current validation object.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    matchesField: <span class="keyword">function</span>(val, field) {
+      <span class="keyword">return</span> _.isEqual(val, <span class="keyword">this</span>.target[field]);
+    },</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-24">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-24">&#182;</a>
+              </div>
+              <p>Check that an item is a minimum length</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    minLength: <span class="keyword">function</span>(val, length) {
+      <span class="keyword">return</span> checkInt(length) || val.length &gt;= length;
+    },</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-25">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-25">&#182;</a>
+              </div>
+              <p>Check that an item is less than a length</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    maxLength: <span class="keyword">function</span>(val, length) {
+      <span class="keyword">return</span> checkInt(length) || val.length &lt;= length;
+    },</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-26">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-26">&#182;</a>
+              </div>
+              <p>Check if two items are the exact same length</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    exactLength: <span class="keyword">function</span>(val, length) {
+      <span class="keyword">return</span> checkInt(length) || val.length === parseInt(length, <span class="number">10</span>);
+    },</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-27">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-27">&#182;</a>
+              </div>
+              <p>Check if one items is greater than another</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    greaterThan: <span class="keyword">function</span>(val, param) {
+      <span class="keyword">return</span> checkNumber(val) || checkNumber(param) || parseFloat(val) &gt; parseFloat(param);
+    },</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-28">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-28">&#182;</a>
+              </div>
+              <p>Check if one items is greater than or equal to another</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    greaterThanEqualTo: <span class="keyword">function</span>(val, param) {
+      <span class="keyword">return</span> checkNumber(val) || checkNumber(param) || parseFloat(val) &gt;= parseFloat(param);
+    },</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-29">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-29">&#182;</a>
+              </div>
+              <p>Check if one item is less than another</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    lessThan: <span class="keyword">function</span>(val, param) {
+      <span class="keyword">return</span> checkNumber(val) || checkNumber(param) || parseFloat(val) &lt; parseFloat(param);
+    },</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-30">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-30">&#182;</a>
+              </div>
+              <p>Check if one item is less than or equal to another</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    lessThanEqualTo: <span class="keyword">function</span>(val, param) {
+      <span class="keyword">return</span> checkNumber(val) || checkNumber(param) || parseFloat(val) &lt;= parseFloat(param);
+    },</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-31">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-31">&#182;</a>
+              </div>
+              <p>Check if this item is a plain object.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    isPlainObject: <span class="keyword">function</span>(val) {
+      <span class="keyword">return</span> (_.isObject(val) &amp;&amp; !_.isFunction(val) &amp;&amp; !_.isArray(val));
+    },
+
+    isNumeric: <span class="keyword">function</span>(val) {
+      <span class="keyword">return</span> !isNaN(parseFloat(val)) &amp;&amp; isFinite(val);
+    }
+
+  };
+
+  <span class="keyword">var</span> checkInt = <span class="keyword">function</span>(val) {
+    <span class="keyword">if</span> (!_.isInteger(val)) <span class="keyword">throw</span> <span class="keyword">new</span> Error(<span class="string">"The validator argument must be a valid integer"</span>);
+  };
+  <span class="keyword">var</span> checkNumber = <span class="keyword">function</span>(val) {
+    <span class="keyword">if</span> (!Checkit.Ctor.prototype.isNumeric(val)) <span class="keyword">throw</span> <span class="keyword">new</span> Error(<span class="string">"The validator argument must be a valid number"</span>);
+  };</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-32">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-32">&#182;</a>
+              </div>
+              <p>Standard regular expression validators.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  <span class="keyword">var</span> regex = Checkit.regex = {
+    integer: <span class="regexp">/^\-?[0-9]+$/</span>,
+    email: <span class="regexp">/^[a-z0-9._%+\-]+@[a-z0-9.\-]+\.[a-z]{2,6}$/i</span>,
+    alpha: <span class="regexp">/^[a-z]+$/i</span>,
+    alphaNumeric: <span class="regexp">/^[a-z0-9]+$/i</span>,
+    alphaDash: <span class="regexp">/^[a-z0-9_\-]+$/i</span>,
+    alphaUnderscore: <span class="regexp">/^[a-z0-9_]+$/i</span>,
+    natural: <span class="regexp">/^[0-9]+$/i</span>,
+    naturalNonZero: <span class="regexp">/^[1-9][0-9]*$/i</span>,
+    ipv4: <span class="regexp">/^((25[0-5]|2[0-4][0-9]|1[0-9]{2}|[0-9]{1,2})\.){3}(25[0-5]|2[0-4][0-9]|1[0-9]{2}|[0-9]{1,2})$/i</span>,
+    base64: <span class="regexp">/^(?:[A-Za-z0-9+\/]{4})*(?:[A-Za-z0-9+\/]{2}==|[A-Za-z0-9+\/]{3}=)?$/</span>,
+    luhn: <span class="regexp">/^(?:4[0-9]{12}(?:[0-9]{3})?|5[1-5][0-9]{14}|6(?:011|5[0-9][0-9])[0-9]{12}|3[47][0-9]{13}|3(?:0[0-5]|[68][0-9])[0-9]{11}|(?:2131|1800|35\d{3})\d{11})$/</span>
+  };</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-33">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-33">&#182;</a>
+              </div>
+              <p>An object that inherits from the <code>Error</code> prototype,
+but contains methods for working with the individual errors
+created by the failed Checkit validation object.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  Checkit.Error = <span class="keyword">function</span>(instance) {
+    Error.call(<span class="keyword">this</span>, <span class="string">'Validation Error'</span>);
+    <span class="keyword">this</span>.checkit  = instance;
+    <span class="keyword">this</span>.language = Checkit.i18n[instance.language] || Checkit.i18n[<span class="string">'en'</span>];
+    <span class="keyword">this</span>.message  = <span class="keyword">this</span>.toString();
+  };
+
+  <span class="keyword">var</span> ctor = <span class="keyword">function</span>(){ <span class="keyword">this</span>.constructor = Error; };
+  ctor.prototype = Error.prototype;
+  Checkit.Error.prototype = <span class="keyword">new</span> ctor;
+
+  _.extend(Checkit.Error.prototype, {</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-34">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-34">&#182;</a>
+              </div>
+              <p>Gets &amp; formats the validation error message for an <code>item</code>.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    get: <span class="keyword">function</span>(key) {
+      <span class="keyword">var</span> items;
+      <span class="keyword">if</span> (items = <span class="keyword">this</span>.checkit.errors[key]) {
+        <span class="keyword">return</span> _.map(items, <span class="keyword">function</span>(item) {
+          <span class="keyword">return</span> <span class="keyword">this</span>._format(key, item);
+        }, <span class="keyword">this</span>);
+      }
+    },</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-35">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-35">&#182;</a>
+              </div>
+              <p>Returns the first validation error for an <code>item</code>.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    first: <span class="keyword">function</span>(key) {
+      <span class="keyword">var</span> item;
+      <span class="keyword">if</span> (item = <span class="keyword">this</span>.checkit.errors[key]) {
+        <span class="keyword">return</span> <span class="keyword">this</span>._format(key, item[<span class="number">0</span>]);
+      }
+    },</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-36">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-36">&#182;</a>
+              </div>
+              <p>Convert the current error object toString, by stringifying the JSON representation
+of the object.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    toString: <span class="keyword">function</span>() {
+      <span class="keyword">return</span> <span class="string">'{validationErrors: '</span> + JSON.stringify(<span class="keyword">this</span>) + <span class="string">'}'</span>;
+    },</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-37">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-37">&#182;</a>
+              </div>
+              <p>Creates a JSON object of the validations, if <code>true</code> is passed to <code>all</code> - it will
+return an array for each object property, rather than the first failed validation.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    toJSON: <span class="keyword">function</span>(all) {
+      <span class="keyword">return</span> _.reduce(<span class="keyword">this</span>.checkit.errors, <span class="keyword">function</span>(memo, val, key) {
+        memo[key] = all ? <span class="keyword">this</span>.get(key) : <span class="keyword">this</span>.first(key);
+        <span class="keyword">return</span> memo;
+      }, {}, <span class="keyword">this</span>);
+    },</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-38">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-38">&#182;</a>
+              </div>
+              <p>Formats the particular item</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    _format: <span class="keyword">function</span>(key, item) {
+      <span class="keyword">var</span> label   = item.label   || <span class="keyword">this</span>.checkit.labels[key] || <span class="keyword">this</span>.language.labels[key] || <span class="keyword">this</span>.checkit.labelTransform(key);
+      <span class="keyword">var</span> message = item.message || <span class="keyword">this</span>.language.messages[item.rule] || <span class="keyword">this</span>.language.messages.fallback;
+      <span class="keyword">if</span> (message) {
+        message = message.replace(labelRegex, label);
+        <span class="keyword">for</span> (<span class="keyword">var</span> i = <span class="number">0</span>, l = item.param.length; i &lt; l; i++) {
+          message = message.replace(varRegex(i+<span class="number">1</span>), item.param[i]);
+        }
+      }
+      <span class="keyword">return</span> message;
+    }
+
+  });</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-39">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-39">&#182;</a>
+              </div>
+              <p>Regular expression for matching the <code>field_name</code> and <code>var_n</code></p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  <span class="keyword">var</span> labelRegex = <span class="regexp">/\{\{label\}\}/g</span>;
+  <span class="keyword">var</span> varRegex   = <span class="keyword">function</span>(i) { <span class="keyword">return</span> <span class="keyword">new</span> RegExp(<span class="string">'{{var_'</span> + i + <span class="string">'}}'</span>, <span class="string">'g'</span>); };</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-40">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-40">&#182;</a>
+              </div>
+              <p>Used to transform the label before using it, can be set globally or in the <code>options</code> for the Checkit object.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  Checkit.labelTransform = <span class="keyword">function</span>(label) {
+    <span class="keyword">return</span> label;
+  };</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-41">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-41">&#182;</a>
+              </div>
+              <p>Object containing languages for the validations... Feel free to
+add anything to this object.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  Checkit.i18n = {
+
+    en: {
+
+      labels: {},
+
+      messages: {</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-42">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-42">&#182;</a>
+              </div>
+              <p>Custom Predicates</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>        exists: <span class="string">'The {{label}} must be defined'</span>,
+        required: <span class="string">'The {{label}} is required'</span>,
+        minLength: <span class="string">'The {{label}} must be at least {{var_1}} characters long'</span>,
+        maxLength: <span class="string">'The {{label}} must not exceed {{var_1}} characters long'</span>,
+        exactLength: <span class="string">'The {{label}} must be exactly {{var_1}} characters long'</span>,
+        lessThan: <span class="string">'The {{label}} must be a number less than {{var_1}}'</span>,
+        lessThanEqualTo: <span class="string">'The {{label}} must be a number less than or equal to {{var_1}}'</span>,
+        greaterThanEqualTo: <span class="string">'The {{label}} must be a number greater than or equal to {{var_1}}'</span>,
+        validEmail: <span class="string">'The {{label}} must be a valid email address'</span>,</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-43">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-43">&#182;</a>
+              </div>
+              <p>Underscore Predicates</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>        isEqual: <span class="string">'The {{label}} does not match {{var_1}}'</span>,
+        isBoolean: <span class="string">'The {{label}} must be type "boolean"'</span>,
+        isEmpty: <span class="string">'The {{label}} must be empty'</span>,
+        isArray: <span class="string">'The {{label}} must be an array'</span>,</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-44">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-44">&#182;</a>
+              </div>
+              <p>Regex specific messages.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>        alpha: <span class="string">'The {{label}} must only contain alphabetical characters'</span>,
+        alphaDash: <span class="string">'The {{label}} must only contain alpha-numeric characters, underscores, and dashes'</span>,
+        alphaNumeric: <span class="string">'The {{label}} must only contain alpha-numeric characters'</span>,
+        alphaUnderscore: <span class="string">'The {{label}} must only contain alpha-numeric characters, underscores, and dashes'</span>,
+        natural: <span class="string">'The {{label}} must be a positive number'</span>,
+        naturalNonZero: <span class="string">'The {{label}} must be a number greater than zero'</span>,
+        ipv4: <span class="string">'The {{label}} must be a valid IPv4 string'</span>,
+        base64: <span class="string">'The {{label}} must be a base64 string'</span>,
+        luhn: <span class="string">'The {{label}} must be a valid credit card number'</span>,</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-45">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-45">&#182;</a>
+              </div>
+              <p>If there is no validation provided for an item, use this generic line.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>        fallback: <span class="string">'Validation for {{label}} did not pass'</span>
+      }
+    }
+  };
+
+  <span class="keyword">return</span> Checkit;
+
+});</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-46">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-46">&#182;</a>
+              </div>
+              <p>Boilerplate definition block... get the correct dependencies and initialize everything.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>})(<span class="keyword">function</span>(CheckitLib) {</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-47">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-47">&#182;</a>
+              </div>
+              <p>Node.js</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  <span class="keyword">if</span> (<span class="keyword">typeof</span> exports === <span class="string">'object'</span>) {
+
+    module.exports = CheckitLib(require(<span class="string">'when'</span>), require(<span class="string">'underscore'</span>));</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-48">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-48">&#182;</a>
+              </div>
+              <p>Require.js / AMD</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  } <span class="keyword">else</span> <span class="keyword">if</span> (<span class="keyword">typeof</span> define === <span class="string">"function"</span> &amp;&amp; define.amd) {
+
+    define(<span class="string">'checkit'</span>, [<span class="string">'when'</span>, <span class="string">'underscore'</span>], <span class="keyword">function</span>(when, _) {
+      <span class="keyword">return</span> CheckitLib(when, _);
+    });</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-49">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-49">&#182;</a>
+              </div>
+              <p>Browser Globals</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  } <span class="keyword">else</span> {
+
+    <span class="keyword">var</span> root = <span class="keyword">this</span>;
+    <span class="keyword">var</span> lastCheckit = root.Checkit;
+    <span class="keyword">var</span> Checkit     = root.Checkit = CheckitLib(<span class="literal">null</span>, root._);
+    Checkit.noConflict = <span class="keyword">function</span>() {
+      root.Checkit = lastCheckit;
+      <span class="keyword">return</span> Checkit;
+    };
+
+  }
+
+});</pre></div></div>
+            
+        </li>
+        
+    </ul>
+  </div>
+</body>
+</html>

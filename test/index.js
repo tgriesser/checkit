@@ -2,6 +2,7 @@ var when      = require('when');
 var _         = require('underscore');
 var Checkit   = require('../checkit');
 var testBlock = require('./block');
+
 var equal     = require('assert').equal;
 var deepEqual = require('assert').deepEqual;
 
@@ -32,15 +33,15 @@ var suite = function(type) {
     describe('emails', function() {
 
       it('passes with a valid email', function(ok) {
-        handler(checkit.run({email: ['validEmail']}), ok);
+        handler(checkit.run({email: ['email']}), ok);
       });
 
       it('does not run on an empty input', function(ok) {
-        handler(Checkit({}).run({email: ['validEmail']}), ok);
+        handler(Checkit({}).run({email: ['email']}), ok);
       });
 
       it('fails with an invalid email', function(ok) {
-        handler(checkit.run({emailFail: ['validEmail']}), ok, false, null, function(err) {
+        handler(checkit.run({emailFail: ['email']}), ok, false, null, function(err) {
           equal(err.get('emailFail'), 'The emailFail must be a valid email address');
         });
       });

@@ -2,7 +2,9 @@
 //     http://tgriesser.com/checkit
 //     (c) 2013 Tim Griesser
 //     Checkit may be freely distributed under the MIT license.
-(function(define) { "use strict";
+(function(define) {
+
+"use strict";
 
 define(function(when, _) {
 
@@ -19,23 +21,24 @@ define(function(when, _) {
   Checkit.language = 'en';
 
   // Determines (globally) whether the promises being `run` are asynchronous. Set to `true` by
-  // default, unless `when` isn't defined, so we can use this quite simply in the browser where
+  // default, unless `when` isn't defined, so we can use this in the browser where
   // we might not need async validations anyway.
-  Checkit.async = (when !== void 0);
+  Checkit.async = (when != null);
 
   // Constructor for the Checkit object.
   Checkit.Ctor = function(target, options) {
-    options || (options = {});
-    this.target         = target;
-    this._applyAll      = [];
-    this.labels         = {};
+    options        = _.clone(options) || {};
+    this.target    = _.clone(target);
+    this.labels    = {};
     this._prepOptions(options);
     _.bindAll(this, '_asyncError');
   };
 
+  // Options which are chosen from the `options` passed into the `Checkit.Ctor`.
+  // Each option will override the global `Checkit[key]` value.
   var checkitOpts = ['labelTransform', 'async', 'language'];
 
-  _.extend(Checkit.Ctor.prototype, {
+  Checkit.Ctor.prototype = {
 
     // Runs a validation block, returning a deferred object, or
     // a boolean if the validations are run asynchronously.
@@ -174,6 +177,8 @@ define(function(when, _) {
             result = regex[rule].test(value);
           } else if (_[rule]) {
             result = _[rule].apply(_, param);
+          } else if (_['is' + capitalize(rule)]) {
+            result = _['is' + capitalize(rule)].apply(_, param);
           } else {
             throw new Error('No validation defined for ' + rule);
           }
@@ -207,7 +212,7 @@ define(function(when, _) {
     },
 
     // Check that an item is a valid email
-    validEmail: function(val) {
+    email: function(val) {
       return regex.email.test(val);
     },
 
@@ -256,11 +261,12 @@ define(function(when, _) {
       return (_.isObject(val) && !_.isFunction(val) && !_.isArray(val));
     },
 
+    // Check if the value is numeric
     isNumeric: function(val) {
       return !isNaN(parseFloat(val)) && isFinite(val);
     }
 
-  });
+  };
 
   var checkInt = function(val) {
     if (!_.isInteger(val)) throw new Error("The validator argument must be a valid integer");
@@ -291,7 +297,6 @@ define(function(when, _) {
     Error.call(this, 'Validation Error');
     this.checkit  = instance;
     this.language = Checkit.i18n[instance.language] || Checkit.i18n['en'];
-    this.message  = this.toString();
   };
 
   var ctor = function(){ this.constructor = Error; };
@@ -352,6 +357,11 @@ define(function(when, _) {
   var labelRegex = /\{\{label\}\}/g;
   var varRegex   = function(i) { return new RegExp('{{var_' + i + '}}', 'g'); };
 
+  // Simple capitalize helper.
+  var capitalize = function(word) {
+    return word.charAt(0).toUpperCase() + word.slice(1);
+  };
+
   // Used to transform the label before using it, can be set globally or in the `options` for the Checkit object.
   Checkit.labelTransform = function(label) {
     return label;
@@ -376,7 +386,8 @@ define(function(when, _) {
         lessThan: 'The {{label}} must be a number less than {{var_1}}',
         lessThanEqualTo: 'The {{label}} must be a number less than or equal to {{var_1}}',
         greaterThanEqualTo: 'The {{label}} must be a number greater than or equal to {{var_1}}',
-        validEmail: 'The {{label}} must be a valid email address',
+        email: 'The {{label}} must be a valid email address',
+        isNumeric: 'The {{label}} must be a numberic value',
 
         // Underscore Predicates
         isEqual: 'The {{label}} does not match {{var_1}}',
@@ -397,7 +408,6 @@ define(function(when, _) {
 
         // If there is no validation provided for an item, use this generic line.
         fallback: 'Validation for {{label}} did not pass'
-
       }
     }
   };
@@ -426,7 +436,7 @@ define(function(when, _) {
 
     var root = this;
     var lastCheckit = root.Checkit;
-    var Checkit     = root.Checkit = CheckitLib(root.when, root._);
+    var Checkit     = root.Checkit = CheckitLib(null, root._);
     Checkit.noConflict = function() {
       root.Checkit = lastCheckit;
       return Checkit;

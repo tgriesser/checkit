@@ -1,105 +1,180 @@
-Checkit
-===============
+# Checkit.js
 
-[![Build Status](https://travis-ci.org/tgriesser/checkit.png)](https://travis-ci.org/tgriesser/checkit)
+## A DOM-independent validation module for Node.js and the Browser
 
-## Simple, DOM independent javascript validations for Node.js and the browser
-
-The Checkit library aims to be a lightweight, flexible, validation library,
-with no dependence on the DOM, targeting both Node.js and the browser.
-
-Checkit depends on [underscore.js](http://underscorejs.org), and (optionally)
-[when.js](https://github.com/cujojs/when) for using the library asynchronously with promises. If you
-wish to use when, but would rather use browser globals than a package manager, a shimmed version of
-when is included in the `/lib` directory for your convenience.
-
-## Getting Started
-
-Creating a Checkit object starts with specifying a **target** to be validated, as well as an optional
-**options** object to help setup the validation settings such as **language** and **async**.
+## Basic Usage
 
 ```js
-var validator  = Checkit(target, options);
-```
+var checkit = new Checkit({
+  firstName: 'required',
+  lastName: 'required',
+  email: ['required', 'email']
+});
 
-## Validating an object
-
-The `run` method passes through to `runAsync` or `runSync` depending on whether the async flag is set globally or in the
-options passed to the `Checkit` object.
-
-```js
-validator.run(validations);
-```
-
-### Methods:
-
-**run([rules])**
-
-The rules are optional, particularly
-
-### Validation options:
-
-If no language is specified, then the value of `Checkit.defaultLanguage` will
-be used (defaults to "en").
-
-### Checkit.Error
-
-The `Checkit.Error` object is used to handle all errors. If a validation is run synchronously,
-the validation will return false and this value will be set to the `.validationError` property
-on the currently validating instance. If the validation is run asynchronously, this error will
-be passed in rejecting the promise.
-
-**get(key)**
-
-Gets the array of validation error messages for a particular key off the validation object.
-
-**first(key)**
-
-Gets the first of validation error messages for a particular key.
-
-**toJSON([all])**
-
-Turns the validation errors into a hash. If the optional **all** is set to true, then it
-returns an array of messages rather than the first validation message for each error key.
-
-**toString()**
-
-A string saying how many errors have been triggered total in the current validation.
-
----
-
-### Example Data:
-
-```js
-var example = {
-  'user' : 'Joe User',
-  'email' : 'joe@example.com',
-  'password' : '123',
-  'password_confirm' : '456'
+var body = {
+  email: 'test@example.com',
+  firstName: 'Tim',
+  lastName: 'Griesser',
+  githubUsername: 'tgriesser'
 };
+
+checkit.run(body).then(function(validated) {
+  console.log(validated);
+})
 ```
 
-#### Example 1: Simple Validation
+-----
+
+<table>
+  <caption>
+      Available Validators
+  </caption>
+  <thead>
+    <tr>
+      <th>Validation Name</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>accepted</td>
+      <td>The field under validation must be yes, on, or 1. This is useful for validating "Terms of Service" acceptance.</td>
+    </tr>
+    <tr>
+      <td>after:date</td>
+      <td>The field under validation must be a value after a given date. The dates will be passed into the PHP strtotime function.</td>
+    </tr>
+    <tr>
+      <td>alpha</td>
+      <td>The field under validation must be entirely alphabetic characters.</td>
+    </tr>
+    <tr>
+      <td>alphaDash</td>
+      <td>The field under validation may have alpha-numeric characters, as well as dashes and underscores.</td>
+    </tr>
+    <tr>
+      <td>alpha_num</td>
+      <td>The field under validation must be entirely alpha-numeric characters.</td>
+    </tr>
+    <tr>
+      <td>before:date</td>
+      <td>The field under validation must be a value preceding the given date. The dates will be passed into the PHP strtotime function.</td>
+    </tr>
+    <tr>
+      <td>between:min,max</td>
+      <td>The field under validation must have a size between the given min and max. Strings, numerics, and files are evaluated in the same fashion as the size rule.</td>
+    </tr>
+    <tr>
+      <td>confirmed</td>
+      <td>The field under validation must have a matching field of foo_confirmation. For example, if the field under validation is password, a matching password_confirmation field must be present in the input.</td>
+    </tr>
+    <tr>
+      <td>date</td>
+      <td>The field under validation must be a valid date according to the strtotime PHP function.</td>
+    </tr>
+    <tr>
+      <td>date_format:format</td>
+      <td>The field under validation must match the format defined according to the date_parse_from_format PHP function.</td>
+    </tr>
+    <tr>
+      <td>different:field</td>
+      <td>The given field must be different than the field under validation.</td>
+    </tr>
+    <tr>
+      <td>email</td>
+      <td>The field under validation must be formatted as an e-mail address.</td>
+    </tr>
+    <tr>
+      <td>in:foo,bar,...</td>
+      <td>The field under validation must be included in the given list of values.</td>
+    </tr>
+    <tr>
+      <td>integer</td>
+      <td>The field under validation must have an integer value.</td>
+    </tr>
+    <tr>
+      <td>ip</td>
+      <td>The field under validation must be formatted as an IP address.</td>
+    </tr>
+    <tr>
+      <td>max:value</td>
+      <td>The field under validation must be less than a maximum value. Strings, numerics, and files are evaluated in the same fashion as the size rule.</td>
+    </tr>
+    <tr>
+      <td>min:value</td>
+      <td>The field under validation must have a minimum value. Strings, numerics, and files are evaluated in the same fashion as the size rule.</td>
+    </tr>
+    <tr>
+      <td>not_in:foo,bar,...</td>
+      <td>The field under validation must not be included in the given list of values.</td>
+    </tr>
+    <tr>
+      <td>numeric</td>
+      <td>The field under validation must have a numeric value.</td>
+    </tr>
+    <tr>
+      <td>regex:pattern</td>
+      <td>The field under validation must match the given regular expression.</td>
+    </tr>
+    <tr>
+      <td>required</td>
+      <td>The field under validation must be present in the input data.</td>
+    </tr>
+    <tr>
+      <td>required_if:field,value</td>
+      <td>The field under validation must be present if the field field is equal to value.</td>
+    </tr>
+    <tr>
+      <td>required_with:foo,bar,...</td>
+      <td>The field under validation must be present only if the other specified fields are present.</td>
+    </tr>
+    <tr>
+      <td>required_without:foo,bar,...</td>
+      <td>The field under validation must be present only when the other specified fields are not present.</td>
+    </tr>
+    <tr>
+      <td>same:field</td>
+      <td>The given field must match the field under validation.</td>
+    </tr>
+    <tr>
+      <td>size:value</td>
+      <td>The field under validation must have a size matching the given value.
+          For string data, value corresponds to the number of characters. For numeric data, value corresponds to a given integer value.</td>
+    </tr>
+    <tr>
+      <td>url</td>
+      <td>The field under validation must be formatted as an URL.</td>
+    </tr>
+  </tbody>
+</table>
+
+### Conditionally adding rules
+
+Sometimes you may wish to require a given field only if another field has a greater value than 100. Or you may need two fields to have a given value only when another field is present. Adding these validation rules doens't have to be a pain. First, create a `Checkit` instance with the main rules that never change:
 
 ```js
-Checkit(example).run({
-  'user'     : ['required', 'alphaDash', 'maxLength:255'],
-  'email'    : ['required', 'validEmail'],
-  'password' : ['required']
-  'password_confirm': ['matchesField:password']
-}).then(function(validator) {
-
-}, function(err) {
-
+var checkit = new Checkit({
+  firstName: ['required'],
+  lastName: ['required'],
+  email: ['required', 'email']
 });
 ```
 
-### Example 2: Custom Validation
+The first of the `maybe` method is the hash of validation fields / settings. The second argument is the function, evaluated with the object passed to the `Checkit` instance, and will add . This method makes it a breeze to build complex conditional validations.
 
 ```js
-Checkit(example).run({
-  'user'     : ['']
+checkit.maybe({reason: 'required|max:500'}, function(input) {
+    return input.games >= 100;
 });
-
 ```
+
+### Advanced &amp; Custom Validators
+
+
+
+
+### Custom Error Messages
+
+If needed, you may use custom error messages for validation instead of the defaults. There are several ways to specify custom messages.
+
 
