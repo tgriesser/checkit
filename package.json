@@ -18,7 +18,9 @@
     "objectdump": "~0.3.0",
     "underscore": "~1.5.1",
     "grunt": "~0.4.1",
-    "grunt-release": "~0.5.1"
+    "grunt-release": "~0.5.1",
+    "node-uuid": "~1.4.1",
+    "bluebird": "~0.9.7-0"
   },
   "repository": {
     "type": "git",

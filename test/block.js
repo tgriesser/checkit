@@ -1,7 +1,14 @@
 
+var uuid = require('node-uuid');
+
 module.exports = {
   email: 'tgriesser10@gmail.com',
   emailFail: 'tgriesser(at)gmail(dot)com',
+
+  accepted1: 'true',
+  accepted2: '1',
+  accepted3: 1,
+  accepted4: 'on',
 
   integer: 12,
   negativeInteger: -12,
@@ -24,7 +31,6 @@ module.exports = {
   isArguments: arguments,
 
   ipv4: '192.168.0.1',
-  ipv6: '2001:0db8:85a3:0000:0000:8a2e:0370:7334',
 
   isFunction: function() {
     return true;
@@ -55,6 +61,12 @@ module.exports = {
   isRegExp: /^[0-9]$/g,
   isNaN: NaN,
   isNull: null,
+
+  url1: 'http://google.com',
+  url2: 'https://google.com',
+
+  uuidv1: uuid.v1(),
+  uuidv4: uuid.v4(),
 
   base64: 'TWFuIGlzIGRpc3Rpbmd1aXNoZWQsIG5vdCBvbmx5IGJ5IGhpcyByZWFzb24sIGJ1dCBieSB0aGlzI\
 HNpbmd1bGFyIHBhc3Npb24gZnJvbSBvdGhlciBhbmltYWxzLCB3aGljaCBpcyBhIGx1c3Qgb2YgdGhlIG1pbmQsIHRo\

@@ -1,4 +1,4 @@
-var when      = require('when');
+var Promise   = require('Bluebird');
 var _         = require('underscore');
 var Checkit   = require('../checkit');
 var testBlock = require('./block');
@@ -6,43 +6,65 @@ var testBlock = require('./block');
 var equal     = require('assert').equal;
 var deepEqual = require('assert').deepEqual;
 
-var suite = function(type) {
+  describe('validation suite', function() {
 
-  describe(type + ' validations', function() {
+    var handler = function(dfd, ok, onRejected) {
+      dfd.then(null, onRejected).then(function() {
+        ok();
+      }).catch(function(err) {
+        ok(err.toString());
+      });
+    };
 
-    var checkit;
+    describe('accepted', function() {
 
-    beforeEach(function() {
-      if (type === 'sync') Checkit.async = false;
-      checkit = Checkit(testBlock);
+      it('passes with on', function(ok) {
+        handler(Checkit({
+          accepted1: 'accepted',
+          accepted2: 'accepted',
+          accepted3: 'accepted',
+          accepted4: 'accepted'
+        }).run(testBlock), ok);
+      });
+
     });
 
-    var handler = function(dfd, ok, syncVal, onFulfilled, onRejected) {
-      if (syncVal == void 0) syncVal = true;
-      if (type === 'sync') {
-        when(dfd).then(function(resp) {
-          ok(equal(resp, syncVal));
-        });
-      } else {
-        when(dfd).then(onFulfilled, onRejected).then(function() {
-          ok();
-        }).then(null, ok);
-      }
-    };
+    describe('between', function() {
+
+      it('should pass for numbers', function(ok) {
+        handler(Checkit({
+          integer: ['between:10:15']
+        }).run(testBlock), ok);
+      });
+
+      it('should pass for numbers in strings', function(ok) {
+        handler(Checkit({
+          stringInteger: ['between:10:15']
+        }).run(testBlock), ok);
+      });
+
+      it('should fail if the value is outside the range', function(ok) {
+        handler(Checkit({
+          integer: ['between:0:10']
+        }).run(testBlock), ok, function() {});
+      });
+
+    });
+
 
     describe('emails', function() {
 
       it('passes with a valid email', function(ok) {
-        handler(checkit.run({email: ['email']}), ok);
+        handler(Checkit({email: ['email']}).run(testBlock), ok);
       });
 
       it('does not run on an empty input', function(ok) {
-        handler(Checkit({}).run({email: ['email']}), ok);
+        handler(Checkit({email: ['email']}).run(testBlock), ok);
       });
 
       it('fails with an invalid email', function(ok) {
-        handler(checkit.run({emailFail: ['email']}), ok, false, null, function(err) {
-          equal(err.get('emailFail'), 'The emailFail must be a valid email address');
+        handler(Checkit({emailFail: ['email']}).run(testBlock), ok, function(err) {
+          equal(err.get('emailFail').toString(), ['Errors with emailFail: The emailFail must be a valid email address. ']);
         });
       });
 
@@ -52,34 +74,34 @@ var suite = function(type) {
 
       describe('integer', function() {
         it('should pass for numbers and strings (positive and negative)', function(ok) {
-          handler(checkit.run({
+          handler(Checkit({
             integer: 'integer',
             negativeInteger: 'integer',
             stringInteger: 'integer',
             negativeStringInteger: 'integer'
-          }), ok);
+          }).run(testBlock), ok);
         });
       });
 
       describe('numeric', function() {
         it('should only pass for numbers for negative numbers and strings', function(ok) {
-          handler(checkit.run({
+          handler(Checkit({
             negativeInteger: 'isNumeric',
             negativeStringInteger: 'isNumeric'
-          }), ok);
+          }).run(testBlock), ok);
         });
 
         it('should pass for positive numbers and strings', function(ok) {
-          handler(checkit.run({
+          handler(Checkit({
             integer: 'isNumeric',
             stringInteger: 'isNumeric'
-          }), ok);
+          }).run(testBlock), ok);
         });
 
         it('should fail for NaN', function(ok) {
-          handler(checkit.run({
+          handler(Checkit({
             isNaN: 'isNumeric'
-          }), ok, false, null, function() {});
+          }).run(testBlock), ok, function() {});
         });
 
       });
@@ -87,55 +109,87 @@ var suite = function(type) {
       describe('isNumber', function() {
 
         it('should only pass for numbers', function(ok) {
-          handler(checkit.run({
+          handler(Checkit({
             integer: ['isNumber'],
             negativeInteger: ['isNumber']
-          }), ok);
+          }).run(testBlock), ok);
         });
 
         it('should fail for numbers in strings', function(ok) {
-          handler(checkit.run({
+          handler(Checkit({
             stringInteger: ['isNumber']
-          }), ok, false, null, function() {});
+          }).run(testBlock), ok, function() {});
         });
 
         it('should pass for NaN', function(ok) {
-          handler(checkit.run({
+          handler(Checkit({
             isNaN: ['isNumber']
-          }), ok);
+          }).run(testBlock), ok);
         });
 
       });
 
       describe('isNaN', function(ok) {
         it('should only pass for NaN', function(ok) {
-          handler(checkit.run({
+          handler(Checkit({
             isNaN: ['isNaN']
-          }), ok);
+          }).run(testBlock), ok);
         });
       });
 
       describe('isBoolean', function() {
 
         it('should pass for true and false', function(ok) {
-          handler(checkit.run({
+          handler(Checkit({
             isBooleanTrue: ['isBoolean'],
             isBooleanFalse: ['isBoolean']
-          }), ok);
+          }).run(testBlock), ok);
         });
 
         it('should not pass for "true" and "false"', function(ok) {
-          handler(checkit.run({
+          handler(Checkit({
             trueString: ['isBoolean'],
             falseString: ['isBoolean']
-          }), ok, false, null, function() {});
+          }).run(testBlock), ok, function() {});
         });
 
         it('should not pass for 0 and 1', function(ok) {
-          handler(checkit.run({
+          handler(Checkit({
             zero: ['isBoolean'],
             one: ['isBoolean']
-          }), ok, false, null, function() {});
+          }).run(testBlock), ok, function() {});
+        });
+
+      });
+
+      describe('uuid', function() {
+
+        it('should pass for uuid v1', function(ok) {
+          handler(Checkit({
+            uuidv1: ['uuid']
+          }).run(testBlock), ok);
+        });
+
+        it('should pass for uuid v4', function(ok) {
+          handler(Checkit({
+            uuidv4: ['uuid']
+          }).run(testBlock), ok);
+        });
+
+      });
+
+      describe('url', function() {
+
+        it('should validate a http url', function(ok) {
+          handler(Checkit({
+            url1: ['url']
+          }).run(testBlock), ok);
+        });
+
+        it('should validate a https url', function(ok) {
+          handler(Checkit({
+            url2: ['url']
+          }).run(testBlock), ok);
         });
 
       });
@@ -145,11 +199,11 @@ var suite = function(type) {
     describe('misc', function() {
 
       it('should check ipv4 and addresses', function(ok) {
-        handler(checkit.run({ipv4: ['ipv4']}), ok);
+        handler(Checkit({ipv4: ['ipv4']}).run(testBlock), ok);
       });
 
       it('should return true on a valid base64 string', function(ok) {
-        handler(checkit.run({base64: 'base64'}), ok);
+        handler(Checkit({base64: 'base64'}).run(testBlock), ok);
       });
 
     });
@@ -157,7 +211,7 @@ var suite = function(type) {
     describe('arguments', function() {
 
       it('should pass with arguments', function(ok) {
-        handler(checkit.run({isArguments: "isArguments"}), ok);
+        handler(Checkit({isArguments: "isArguments"}).run(testBlock), ok);
       });
 
     });
@@ -165,12 +219,12 @@ var suite = function(type) {
     describe('isEmpty', function() {
 
       it('passes on empty string, array, object, null', function(ok) {
-        handler(checkit.run({
+        handler(Checkit({
           isEmptyArray:  ['isEmpty'],
           isEmptyString: ['isEmpty'],
           isEmptyObject: ['isEmpty'],
           isEmptyNull:   ['isEmpty']
-        }), ok);
+        }).run(testBlock), ok);
       });
 
     });
@@ -178,15 +232,10 @@ var suite = function(type) {
     describe('Checkit.Error', function () {
 
       it('should be an instanceof Error', function () {
-        var error = new Checkit.Error(checkit);
+        var error = new Checkit.Error(Checkit());
         equal((error instanceof Error), true);
       });
 
     });
 
   });
-
-};
-
-suite('async');
-suite('sync');

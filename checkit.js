@@ -6,204 +6,179 @@
 
 "use strict";
 
-define(function(when, _) {
+define(function(_, promiseLib, promiseImpl) {
 
-  // The top level `Checkit` is a passthrough to the `Checkit.Ctor` object.
-  // Takes a two arguments, a required `target` - the object being checked, and
-  // an optional `options` hash.
-  var Checkit = function(target, options) {
-    return new Checkit.Ctor(target, options);
+  // The top level `Checkit` constructor, accepting the
+  // `validations` to be run and any (optional) `options`.
+  var Checkit = function(validations, options) {
+    if (!(this instanceof Checkit)) {
+      return new Checkit(validations, options);
+    }
+    this.labels      = {};
+    this.conditional = [];
+    this.validations = prepValidations(validations || {});
+    this.options     = options || {};
   };
 
-  // Sets the default language for all validations, defaults to "en" which
+  Checkit.prototype = {
+
+    // Possibly run a validations on this object, depending on the
+    // result of the `conditional` handler.
+    maybe: function(validations, conditional) {
+      this.conditional.push([prepValidations(validations), conditional]);
+      return this;
+    },
+
+    // Asynchronously runs a validation block, returning a promise
+    // which resolves with the validated object items, or is rejected
+    // with a `Checkit.Error` instance.
+    run: function(target) {
+      return new Checkit.Runner(this).run(target);
+    }
+
+  };
+
+  // The default language for all validations, defaults to "en" which
   // is included with the library by default. To add additional languages,
   // add them to the `Checkit.i18n` object.
   Checkit.language = 'en';
 
-  // Determines (globally) whether the promises being `run` are asynchronous. Set to `true` by
-  // default, unless `when` isn't defined, so we can use this in the browser where
-  // we might not need async validations anyway.
-  Checkit.async = (when != null);
-
-  // Constructor for the Checkit object.
-  Checkit.Ctor = function(target, options) {
-    options        = _.clone(options) || {};
-    this.target    = _.clone(target);
-    this.labels    = {};
-    this._prepOptions(options);
-    _.bindAll(this, '_asyncError');
+  // Runs validation on an individual rule & value, for convenience.
+  // e.g. Checkit.validate('foo@domain', rules).then(onFulfilled, onRejected);
+  Checkit.check = function(value, rules) {
+    return new Checkit({check: rules}).run({check: value}).then(null, function(err) {
+      if (err instanceof Checkit.Error) throw err.get('check');
+      throw err;
+    });
   };
 
-  // Options which are chosen from the `options` passed into the `Checkit.Ctor`.
-  // Each option will override the global `Checkit[key]` value.
-  var checkitOpts = ['labelTransform', 'async', 'language'];
+  // The validator is the object which is dispatched with the `run`
+  // call from the `checkit.run` method.
+  var Runner = Checkit.Runner = function(base) {
+    this.checkit  = base;
+    this.errors   = {};
+    this.language = Checkit.i18n[base.options.language || Checkit.language];
+    this.labelTransform = base.labelTransform || Checkit.labelTransform;
+  };
 
-  Checkit.Ctor.prototype = {
+  Runner.prototype = {
 
-    // Runs a validation block, returning a deferred object, or
-    // a boolean if the validations are run asynchronously.
-    run: function(validations, options) {
-      if (options) this._prepOptions(options);
-      this.validations = this._prepValidations(validations || {});
-      return this.async ? this._runAsync() : this._runSync();
-    },
+    // Runs the validations on a specified "target".
+    run: function(target) {
+      target = this.target = _.clone(target || {});
+      var validations = this.checkit.validations,
+        errors = this.errors,
+        pending = [];
 
-    // Preps any pre-defined options sent in the constructor.
-    _prepOptions: function(options) {
-      _.each(checkitOpts, function(key) {
-        this[key] = _.has(options, key) ? options[key] : (this[key] || Checkit[key]);
-      }, this);
-    },
-
-    // Preps the validations being sent to the `run` block, to standardize
-    // the format and allow for maximum flexibility when passing to the
-    // validation blocks.
-    _prepValidations: function(validations) {
+      // Loop through each of the `validations`, running
+      // each of the validations associated with the `key`.
       for (var key in validations) {
         var validation = validations[key];
-        if (!_.isArray(validation)) validations[key] = validation = [validation];
         for (var i = 0, l = validation.length; i < l; i++) {
-          if (!this.isPlainObject(validation[i])) {
-            validation[i] = this._assembleValidation(validation[i]);
-          }
+          pending.push(this.processItem(validation[i], key));
         }
       }
-      return validations;
-    },
 
-    // Turns the current validation item into an object literal,
-    // containing the rule, any arguments split from the `:` delimeter,
-    // and the
-    _assembleValidation: function(validation) {
-      if (_.isString(validation)) {
-        var splitRule = validation.split(':');
-        return {rule: splitRule[0], param: _.rest(splitRule)};
-      } else if (_.isFunction(validation)) {
-        return {rule: validation, param: []};
-      }
-    },
-
-    // Asynchronously runs a block of validations,
-    // returning a deferred object.
-    _runAsync: function() {
-      if (!when) throw new Error('The when.js library is required to run asynchronous validations, please require it.');
-      var key, pending = [];
-      var validations = this.validations;
-      for (key in validations) {
-        var validation = validations[key];
-        for (var i = 0, l = validation.length; i < l; i++) {
-          pending.push(this._processItem(validation[i], this.target[key]));
+      // Once all promise blocks have finished, we'll know whether
+      // the promise should be rejected with an error or resolved with
+      // the validated items.
+      return promise.all(pending).then(function() {
+        if (!_.isEmpty(errors)) {
+          var err = new Checkit.Error('Checkit - ' + _.keys(errors).length + ' invalid values');
+              err.fieldErrors = errors;
+          throw err;
         }
-      }
-      return when.settle(pending).then(this._asyncError);
-    },
-
-    // Processes the errors in an async validation after all of the validations
-    // are guarenteed to be settled. If the result is explicitly false or a rejected
-    // promise, then they are considered to be failures and will be added to the "errors"
-    // stack for the current object.
-    _asyncError: function() {
-      var errors = this.errors = {};
-      var validations = this.validations;
-      for (var key in validations) {
-        var line = validations[key];
-        for (var i = 0, l = line.length; i < l; i++) {
-          var result = line[i].result;
-          if (_.isBoolean(result)) {
-            if (result === false) {
-              (errors[key] || (errors[key] = [])).push(line[i]);
-            }
-          }
-          // If this is a promise, inspect & set the value properly.
-          if (result.inspect) {
-            var inspected = result.inspect();
-            if (inspected.state === 'fulfilled') line[i].result = inspected.value;
-            if (inspected.state === 'rejected') {
-              line[i].result = inspected.reason;
-              (errors[key] || (errors[key] = [])).push(line[i]);
-            }
-          }
-        }
-      }
-      return (!_.isEmpty(errors) ? when.reject(new Checkit.Error(this)) : this);
-    },
-
-    // Processes the values synchronously, adding an error to the stack when a
-    // falsy value occurs.
-    _runSync: function() {
-      var validations = this.validations;
-      var errors = this.errors = {};
-      for (var key in validations) {
-        var line = validations[key];
-        for (var i = 0, l = line.length; i < l; i++) {
-          var processed = this._processItem(line[i], this.target[key]);
-          if (processed === false || processed instanceof Error) {
-            (errors[key] || (errors[key] = [])).push(line[i]);
-          }
-        }
-      }
-      // If `this.errors` isn't empty, go ahead and set the `validationError` property
-      // on this instance to a new `Checkit.Error` object.
-      if (!_.isEmpty(this.errors)) {
-        this.validationError = new Checkit.Error(this);
-        return false;
-      }
-      return true;
+        return _.pick.apply(_, [target].concat(_.keys(validations)));
+      });
     },
 
     // Processes an individual item in the validation collection for the current
     // validation object. Returns the value from the completed validation, which will
     // be a boolean, or potentially a promise if the current object is an async validation.
-    _processItem: function(currentValidation, value) {
-      var result, rule = currentValidation.rule;
-      var param = [value].concat(currentValidation.param);
+    processItem: function(currentValidation, key) {
+      var result, checkit = this.checkit;
+      var runner  = this, errors  = this.errors;
+      var value   = this.target[key];
+      var rule    = currentValidation.rule;
+      var params  = [value].concat(currentValidation.params);
 
       // If the rule isn't an existence / required check, return
       // true if the value doesn't exist.
-      if (rule !== 'exists' && rule !== 'required') {
-        if (value === '' || value == null) result = true;
+      if (rule !== 'accepted' && rule !== 'exists' && rule !== 'required') {
+        if (value === '' || value == null) return;
       }
 
-      if (!result) {
-        // Need to try/catch block this whole deal, since
-        // we're not guarenteed to be inside of promise land, can't have
-        // any uncaught exceptions.
-        try {
-          if (_.isFunction(rule)) {
-            result = rule.apply(this, param);
-          } else if (this[rule]) {
-            result = this[rule].apply(this, param);
-          } else if (regex[rule]) {
-            result = regex[rule].test(value);
-          } else if (_[rule]) {
-            result = _[rule].apply(_, param);
-          } else if (_['is' + capitalize(rule)]) {
-            result = _['is' + capitalize(rule)].apply(_, param);
-          } else {
-            throw new Error('No validation defined for ' + rule);
-          }
-        } catch (e) {
-          result = (this.async ? when.reject(e) : e);
+      // Create a fulfilled promise, so we can safely
+      // run any function and not have a thrown error mess up our day.
+      return promise.fulfilled().then(function() {
+        if (_.isFunction(rule)) {
+          result = rule.apply(runner, params);
+        } else if (Validators[rule]) {
+          var v = new Validator(runner);
+          result = v[rule].apply(v, params);
+        } else if (regex[rule]) {
+          result = regex[rule].test(value);
+        } else if (_[rule]) {
+          result = _[rule].apply(_, params);
+        } else if (_['is' + capitalize(rule)]) {
+          result = _['is' + capitalize(rule)].apply(_, params);
+        } else {
+          var valErr = new Checkit.ValidationError('No validation defined for ' + rule);
+              valErr.validationObject = currentValidation;
+          throw valErr;
         }
+        return result;
+
+      // If the promise is fulfilled, but the value is explicitly `false`,
+      // it's a failed validation... throw it as a `Checkit.ValidationError`.
+      }).then(function(result) {
+        if (_.isBoolean(result) && result === false) {
+          throw new Checkit.ValidationError(runner.getMessage(currentValidation, key));
+        }
+      // Finally, catch any errors thrown from in the validation.
+      }).then(null, function(err) {
+        var fieldError;
+        if (!(fieldError = errors[key])) {
+          fieldError = errors[key] = new Checkit.FieldError('Errors with field ' + key);
+          fieldError.key = key;
+        }
+        // Attach the "rule" in case we want to reference it.
+        err.rule = rule;
+        fieldError.validationErrors.push(err);
+      });
+    },
+
+    // Gets the formatted messaage for the validation error, depending
+    // on what's passed and whatnot.
+    getMessage: function(item, key) {
+      var language = this.language;
+      var label    = item.label   || language.labels[key] || this.labelTransform(key);
+      var message  = item.message || language.messages[item.rule] || language.messages.fallback;
+      message = message.replace(labelRegex, label);
+      for (var i = 0, l = item.params.length; i < l; i++) {
+        message = message.replace(varRegex(i+1), item.params[i]);
       }
+      return message;
+    }
+  };
 
-      return currentValidation.result = result;
+  // All of the stock "Validator" functions
+  // also attached as `Checkit.Validators` for easy access to add new validators.
+  var Validators = Checkit.Validators = {
+
+    // Check if the value is an "accepted" value, useful for form submissions.
+    accepted: function(val) {
+      return _.contains(this._language.accepted, val);
     },
 
-    // Validations
-    // ------------------------------------------------
-
-    // Key must not be `undefined`.
-    exists: function(val) {
-      return val !== void 0;
+    // The item must be a number between the given `min` and `max` values.
+    between: function(val, min, max) {
+      return (this.greaterThan(val, min) &&
+        this.lessThan(val, max));
     },
 
-    // Field is required and not empty
-    required: function(val) {
-      return (val != null && val !== '' ? true : false);
-    },
-
-    // Check that an item contains another item
+    // Check that an item contains another item, either a string,
+    // array, or object.
     contains: function(val, item) {
       if (_.isString(val)) return val.indexOf(item) !== -1;
       if (_.isArray(val))  return _.indexOf(val, item) !== -1;
@@ -211,14 +186,30 @@ define(function(when, _) {
       return false;
     },
 
-    // Check that an item is a valid email
-    email: function(val) {
-      return regex.email.test(val);
+    // The current value should be different than another field in the current
+    // validation object.
+    different: function(val, field) {
+      return !this.matchesField(val, field);
+    },
+
+    // Check if two items are the exact same length
+    exactLength: function(val, length) {
+      return checkInt(length) || val.length === parseInt(length, 10);
+    },
+
+    // Key must not be `undefined`.
+    exists: function(val) {
+      return val !== void 0;
+    },
+
+    // Field is required and not empty (zero does not count as empty).
+    required: function(val) {
+      return (val != null && val !== '' ? true : false);
     },
 
     // Matches another named field in the current validation object.
     matchesField: function(val, field) {
-      return _.isEqual(val, this.target[field]);
+      return _.isEqual(val, this._target[field]);
     },
 
     // Check that an item is a minimum length
@@ -229,11 +220,6 @@ define(function(when, _) {
     // Check that an item is less than a length
     maxLength: function(val, length) {
       return checkInt(length) || val.length <= length;
-    },
-
-    // Check if two items are the exact same length
-    exactLength: function(val, length) {
-      return checkInt(length) || val.length === parseInt(length, 10);
     },
 
     // Check if one items is greater than another
@@ -268,12 +254,24 @@ define(function(when, _) {
 
   };
 
-  var checkInt = function(val) {
-    if (!_.isInteger(val)) throw new Error("The validator argument must be a valid integer");
+  var Validator = function(runner) {
+    this._language = runner.language;
+    this._target   = runner.target;
   };
-  var checkNumber = function(val) {
-    if (!Checkit.Ctor.prototype.isNumeric(val)) throw new Error("The validator argument must be a valid number");
-  };
+
+  Validator.prototype = Validators;
+
+  // Validation helpers & regex
+
+  function checkInt(val) {
+    if (!_.isInteger(val))
+      throw new Error("The validator argument must be a valid integer");
+  }
+
+  function checkNumber(val) {
+    if (!Validators.isNumeric(val))
+      throw new Error("The validator argument must be a valid number");
+  }
 
   // Standard regular expression validators.
   var regex = Checkit.regex = {
@@ -287,82 +285,95 @@ define(function(when, _) {
     naturalNonZero: /^[1-9][0-9]*$/i,
     ipv4: /^((25[0-5]|2[0-4][0-9]|1[0-9]{2}|[0-9]{1,2})\.){3}(25[0-5]|2[0-4][0-9]|1[0-9]{2}|[0-9]{1,2})$/i,
     base64: /^(?:[A-Za-z0-9+\/]{4})*(?:[A-Za-z0-9+\/]{2}==|[A-Za-z0-9+\/]{3}=)?$/,
-    luhn: /^(?:4[0-9]{12}(?:[0-9]{3})?|5[1-5][0-9]{14}|6(?:011|5[0-9][0-9])[0-9]{12}|3[47][0-9]{13}|3(?:0[0-5]|[68][0-9])[0-9]{11}|(?:2131|1800|35\d{3})\d{11})$/
+    luhn: /^(?:4[0-9]{12}(?:[0-9]{3})?|5[1-5][0-9]{14}|6(?:011|5[0-9][0-9])[0-9]{12}|3[47][0-9]{13}|3(?:0[0-5]|[68][0-9])[0-9]{11}|(?:2131|1800|35\d{3})\d{11})$/,
+    uuid: /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i,
+    url: /^((http|https):\/\/(\w+:{0,1}\w*@)?(\S+)|)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-\/]))?$/
   };
 
-  // An object that inherits from the `Error` prototype,
-  // but contains methods for working with the individual errors
-  // created by the failed Checkit validation object.
-  Checkit.Error = function(instance) {
-    Error.call(this, 'Validation Error');
-    this.checkit  = instance;
-    this.language = Checkit.i18n[instance.language] || Checkit.i18n['en'];
+
+  var ErrorCtor = function(){ this.constructor = Error; };
+  ErrorCtor.prototype = Error.prototype;
+
+  // An error for an individual "validation", where one or more "validations"
+  // make up a single ruleset. These are grouped together into a `FieldError`.
+  var ValidationError = Checkit.ValidationError = function(message) {
+    this.name = 'ValidationError';
+    this.message = message || 'ValidationError';
   };
+  ValidationError.prototype = new ErrorCtor;
 
-  var ctor = function(){ this.constructor = Error; };
-  ctor.prototype = Error.prototype;
-  Checkit.Error.prototype = new ctor;
+  // An `Error` object specific to an individual field,
+  // useful in the `Checkit.check` method when you're only
+  // validating an individual field. It contains an "errors"
+  // array which keeps track of any falidations
+  var FieldError = Checkit.FieldError = function(message) {
+    this.name = 'FieldError';
+    this.message = message || 'FieldError';
+    this.validationErrors = [];
+  };
+  FieldError.prototype = new ErrorCtor;
 
-  _.extend(Checkit.Error.prototype, {
+  _.extend(FieldError.prototype, {
 
-    // Gets & formats the validation error message for an `item`.
-    get: function(key) {
-      var items;
-      if (items = this.checkit.errors[key]) {
-        return _.map(items, function(item) {
-          return this._format(key, item);
-        }, this);
-      }
+    first: function() {
+      return this.validationErrors[0];
     },
 
-    // Returns the first validation error for an `item`.
-    first: function(key) {
-      var item;
-      if (item = this.checkit.errors[key]) {
-        return this._format(key, item[0]);
-      }
+    // Call `toString` on the current field, which should
+    // turn the error into the format:
+    toString: function(flat) {
+      var errors = flat ? [this.validationErrors[0]] : this.validationErrors;
+      return 'Errors with ' + this.key + ': ' +
+        _.pluck(errors, 'message').join(', ') + '. ';
     },
 
-    // Convert the current error object toString, by stringifying the JSON representation
-    // of the object.
-    toString: function() {
-      return '{validationErrors: ' + JSON.stringify(this) + '}';
-    },
-
-    // Creates a JSON object of the validations, if `true` is passed to `all` - it will
-    // return an array for each object property, rather than the first failed validation.
-    toJSON: function(all) {
-      return _.reduce(this.checkit.errors, function(memo, val, key) {
-        memo[key] = all ? this.get(key) : this.first(key);
-        return memo;
-      }, {}, this);
-    },
-
-    // Formats the particular item
-    _format: function(key, item) {
-      var label   = item.label   || this.checkit.labels[key] || this.language.labels[key] || this.checkit.labelTransform(key);
-      var message = item.message || this.language.messages[item.rule] || this.language.messages.fallback;
-      if (message) {
-        message = message.replace(labelRegex, label);
-        for (var i = 0, l = item.param.length; i < l; i++) {
-          message = message.replace(varRegex(i+1), item.param[i]);
-        }
-      }
-      return message;
+    // Returns the current error in json format, by calling `toJSON`
+    // on the error, if there is one, otherwise returning the message.
+    toJSON: function() {
+      return _.map(this.validationErrors, function(err) {
+        if (err.toJSON) return err.toJSON();
+        return err.message;
+      });
     }
 
   });
 
-  // Regular expression for matching the `field_name` and `var_n`
-  var labelRegex = /\{\{label\}\}/g;
-  var varRegex   = function(i) { return new RegExp('{{var_' + i + '}}', 'g'); };
-
-  // Simple capitalize helper.
-  var capitalize = function(word) {
-    return word.charAt(0).toUpperCase() + word.slice(1);
+  // An object that inherits from the `Error` prototype,
+  // but contains methods for working with the individual errors
+  // created by the failed Checkit validation object.
+  var CheckitError = Checkit.Error = function(message) {
+    this.name = 'CheckitError';
+    this.message || message || 'CheckitError';
+    this.fieldErrors = {};
   };
+  CheckitError.prototype = new ErrorCtor;
 
-  // Used to transform the label before using it, can be set globally or in the `options` for the Checkit object.
+  _.extend(CheckitError.prototype, {
+
+    get: function(name) {
+      return this.fieldErrors[name];
+    },
+
+    // Convert the current error object toString, by stringifying the JSON representation
+    // of the object.
+    toString: function(flat) {
+      return 'Checkit Errors - ' + _.invoke(this.fieldErrors, 'toString', flat).join(', ');
+    },
+
+    // Creates a JSON object of the validations, if `true` is passed - it will
+    // flatten the error into a single value per item.
+    toJSON: function(flat) {
+      return _.reduce(this.fieldErrors, function(memo, val, key) {
+        var json = val.toJSON();
+        memo[key] = flat ? _.first(json) : json;
+        return memo;
+      }, {});
+    }
+
+  });
+
+  // Used to transform the label before using it, can be
+  // set globally or in the `options` for the Checkit object.
   Checkit.labelTransform = function(label) {
     return label;
   };
@@ -373,23 +384,26 @@ define(function(when, _) {
 
     en: {
 
+      accepted: ['on', 'yes', 1, '1', true, 'true'],
+
       labels: {},
 
       messages: {
 
         // Custom Predicates
+        email: 'The {{label}} must be a valid email address',
+        exactLength: 'The {{label}} must be exactly {{var_1}} characters long',
         exists: 'The {{label}} must be defined',
         required: 'The {{label}} is required',
         minLength: 'The {{label}} must be at least {{var_1}} characters long',
         maxLength: 'The {{label}} must not exceed {{var_1}} characters long',
-        exactLength: 'The {{label}} must be exactly {{var_1}} characters long',
         lessThan: 'The {{label}} must be a number less than {{var_1}}',
         lessThanEqualTo: 'The {{label}} must be a number less than or equal to {{var_1}}',
         greaterThanEqualTo: 'The {{label}} must be a number greater than or equal to {{var_1}}',
-        email: 'The {{label}} must be a valid email address',
-        isNumeric: 'The {{label}} must be a numberic value',
+        isNumeric: 'The {{label}} must be a numeric value',
 
         // Underscore Predicates
+        isDate: 'The {{label}} must be a Date',
         isEqual: 'The {{label}} does not match {{var_1}}',
         isBoolean: 'The {{label}} must be type "boolean"',
         isEmpty: 'The {{label}} must be empty',
@@ -405,6 +419,7 @@ define(function(when, _) {
         ipv4: 'The {{label}} must be a valid IPv4 string',
         base64: 'The {{label}} must be a base64 string',
         luhn: 'The {{label}} must be a valid credit card number',
+        uuid: 'The {{label}} must be a valid uuid',
 
         // If there is no validation provided for an item, use this generic line.
         fallback: 'Validation for {{label}} did not pass'
@@ -412,34 +427,120 @@ define(function(when, _) {
     }
   };
 
+  var promise;
+
+  // If you really want to... you can use this function to pass in a
+  // specific promise implementation...
+  Checkit.setPromiseLib = function(lib, impl) {
+    if (impl === '$') {
+      promise = {
+        fulfilled: function() { return lib.when(); },
+        all: function() { return lib.when.apply(lib, arguments); }
+      };
+    } else {
+      promise = {
+        fulfilled: (impl === 'when' ? lib.resolve : lib.fulfilled),
+        all: lib.all
+      };
+    }
+  };
+
+  // Assorted Helper Items:
+  // --------------------------
+
+  // Regular expression for matching the `field_name` and `var_n`
+  var labelRegex = /\{\{label\}\}/g;
+  function varRegex(i) { return new RegExp('{{var_' + i + '}}', 'g'); }
+
+  // Simple capitalize helper.
+  function capitalize(word) {
+    return word.charAt(0).toUpperCase() + word.slice(1);
+  }
+
+  // Preps the validations being sent to the `run` block, to standardize
+  // the format and allow for maximum flexibility when passing to the
+  // validation blocks.
+  function prepValidations(validations) {
+    validations = _.clone(validations);
+    for (var key in validations) {
+      var validation = validations[key];
+      if (!_.isArray(validation)) validations[key] = validation = [validation];
+      for (var i = 0, l = validation.length; i < l; i++) {
+        if (!Validators.isPlainObject(validation[i])) {
+          validation[i] = assembleValidation(validation[i]);
+        }
+      }
+    }
+    return validations;
+  }
+
+  // Turns the current validation item into an object literal,
+  // containing the rule, any arguments split from the `:` delimeter,
+  // and the
+  function assembleValidation(validation) {
+    if (_.isString(validation)) {
+      var splitRule = validation.split(':');
+      return {rule: splitRule[0], params: _.rest(splitRule)};
+    } else if (_.isFunction(validation)) {
+      return {rule: validation, params: []};
+    }
+  }
+
+  Checkit.setPromiseLib(promiseLib, promiseImpl);
+
   return Checkit;
 
 });
 
-// Boilerplate definition block... get the correct dependencies and initialize everything.
-})(function(CheckitLib) {
+// Boilerplate UMD definition block...
+// get the correct dependencies and initialize everything.
+})(function(checkitLib) {
 
-  // Node.js
+  // Node.js... we're just gonna go with `bluebird` here.
   if (typeof exports === 'object') {
 
-    module.exports = CheckitLib(require('when'), require('underscore'));
+    module.exports = checkitLib(require('underscore'), require('bluebird'), 'bluebird');
 
-  // Require.js / AMD
-  } else if (typeof define === "function" && define.amd) {
+  // AMD
+  } else if (typeof define === 'function' && define.amd) {
 
-    define('checkit', ['when', 'underscore'], function(when, _) {
-      return CheckitLib(when, _);
+    // "when" is the preferred promise lib for AMD, since it's the fastest
+    // lib supporting (pretty much) all browsers...
+    define('checkit', ['underscore', 'when'], function(_, when) {
+      return checkitLib(_, when, 'when');
     });
 
-  // Browser Globals
+  // and then browser globals...
   } else {
 
-    var root = this;
-    var lastCheckit = root.Checkit;
-    var Checkit     = root.Checkit = CheckitLib(null, root._);
-    Checkit.noConflict = function() {
-      root.Checkit = lastCheckit;
-      return Checkit;
+    var promiseLib, promiseImpl, root = this, lastCheckit = root.Checkit;
+
+    // First, check for "Promise"... a-la bluebird...
+    if (typeof Promise === 'function') {
+      promiseLib  = Promise; promiseImpl = 'bluebird';
+    }
+
+    // Then, check for Q.
+    else if (typeof Q === 'function') {
+      promiseLib  = Q; promiseImpl = 'Q';
+    }
+
+    // When is only available as a global if you shim the AMD yourself,
+    // which is highly unlikey, but possible.
+    else if (typeof when === 'function') {
+      promiseLib = when; promiseImpl = 'when';
+    }
+
+    // Then, check for $... we'll assume that
+    // if you're using this lib, you're on a jQuery version >= 1.8.
+    else if (typeof jQuery === 'function') {
+      promiseLib  = jQuery; promiseImpl = '$';
+    }
+
+    var checkit = root.checkit = checkitLib(root._, promiseLib, promiseImpl);
+    checkit.noConflict = function() {
+      root.checkit = lastCheckit;
+      return checkit;
     };
 
   }
