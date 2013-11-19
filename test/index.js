@@ -238,4 +238,12 @@ var deepEqual = require('assert').deepEqual;
 
     });
 
+    describe('conditional items', function() {
+
+      it('should not validate for ', function() {
+
+      });
+
+    });
+
   });

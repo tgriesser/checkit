@@ -27,10 +27,9 @@ checkit.run(body).then(function(validated) {
 
 -----
 
+## Available Validators
+
 <table>
-  <caption>
-      Available Validators
-  </caption>
   <thead>
     <tr>
       <th style="min-width:250px;">Validation Name</th>
@@ -38,6 +37,8 @@ checkit.run(body).then(function(validated) {
     </tr>
   </thead>
   <tbody>
+    <tr><td colspan="2">TODO</td></tr>
+    <!--
     <tr>
       <td>accepted</td>
       <td>The field under validation must be yes, on, or 1. This is useful for validating "Terms of Service" acceptance.</td>
@@ -134,8 +135,10 @@ checkit.run(body).then(function(validated) {
       <td>url</td>
       <td>The field under validation must be formatted as an URL.</td>
     </tr>
+    -->
   </tbody>
 </table>
+
 
 ### Conditionally adding rules
 
@@ -167,6 +170,7 @@ If needed, you may use custom error messages for validation instead of the defau
 
 ### Validation Examples:
 
+TODO
 
 ### Change Log
 
@@ -174,7 +178,7 @@ If needed, you may use custom error messages for validation instead of the defau
 
 - `CheckIt` is now renamed `Checkit`
 - Flipped the `validations` and `target` arguments, so the syntax is now `Checkit(validations).run(input)` rather than `Checkit(input).run(validations)`, allowing for re-use of the validation objects.
-- Lots of other internal changes, probably too many to list.
+- Tons of other internal changes, probably too many to list, pretty much a rewrite from 0.1.0
 
 #### 0.1.0
 

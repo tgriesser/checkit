@@ -2,11 +2,11 @@
 //     http://tgriesser.com/checkit
 //     (c) 2013 Tim Griesser
 //     Checkit may be freely distributed under the MIT license.
-(function(define) {
+(function(umd) {
 
 "use strict";
 
-define(function(_, promiseLib, promiseImpl) {
+umd(function(_, promiseLib, promiseImpl) {
 
   // The top level `Checkit` constructor, accepting the
   // `validations` to be run and any (optional) `options`.
@@ -44,10 +44,13 @@ define(function(_, promiseLib, promiseImpl) {
   Checkit.language = 'en';
 
   // Runs validation on an individual rule & value, for convenience.
-  // e.g. Checkit.validate('foo@domain', rules).then(onFulfilled, onRejected);
-  Checkit.check = function(value, rules) {
-    return new Checkit({check: rules}).run({check: value}).then(null, function(err) {
-      if (err instanceof Checkit.Error) throw err.get('check');
+  // e.g. `Checkit.check('email', 'foo@domain', 'email').then(...`
+  Checkit.check = function(key, value, rules) {
+    var input = {}, validations = {};
+    input[key] = value;
+    validations[key] = rules;
+    return new Checkit(validations).run(input).then(null, function(err) {
+      if (err instanceof Checkit.Error) throw err.get(key);
       throw err;
     });
   };
@@ -55,9 +58,10 @@ define(function(_, promiseLib, promiseImpl) {
   // The validator is the object which is dispatched with the `run`
   // call from the `checkit.run` method.
   var Runner = Checkit.Runner = function(base) {
-    this.checkit  = base;
-    this.errors   = {};
-    this.language = Checkit.i18n[base.options.language || Checkit.language];
+    this.validations = _.clone(base.validations);
+    this.conditional = base.conditional;
+    this.errors      = {};
+    this.language    = Checkit.i18n[base.options.language || Checkit.language];
     this.labelTransform = base.labelTransform || Checkit.labelTransform;
   };
 
@@ -66,37 +70,72 @@ define(function(_, promiseLib, promiseImpl) {
     // Runs the validations on a specified "target".
     run: function(target) {
       target = this.target = _.clone(target || {});
-      var validations = this.checkit.validations,
+      var runner = this, validations = this.validations,
         errors = this.errors,
         pending = [];
 
-      // Loop through each of the `validations`, running
-      // each of the validations associated with the `key`.
-      for (var key in validations) {
-        var validation = validations[key];
-        for (var i = 0, l = validation.length; i < l; i++) {
-          pending.push(this.processItem(validation[i], key));
-        }
+      for (var i = 0, l = this.conditional.length; i < l; i++) {
+        pending.push(this.checkConditional(this.conditional[i]));
       }
 
-      // Once all promise blocks have finished, we'll know whether
-      // the promise should be rejected with an error or resolved with
-      // the validated items.
       return promise.all(pending).then(function() {
-        if (!_.isEmpty(errors)) {
-          var err = new Checkit.Error('Checkit - ' + _.keys(errors).length + ' invalid values');
-              err.fieldErrors = errors;
-          throw err;
+
+        // Use a fresh "pending" stack.
+        var pending = [];
+
+        // Loop through each of the `validations`, running
+        // each of the validations associated with the `key`.
+        for (var key in validations) {
+          var validation = validations[key];
+          for (var i = 0, l = validation.length; i < l; i++) {
+            pending.push(runner.processItem.call(runner, validation[i], key));
+          }
         }
-        return _.pick.apply(_, [target].concat(_.keys(validations)));
+
+        // Once all promise blocks have finished, we'll know whether
+        // the promise should be rejected with an error or resolved with
+        // the validated items.
+        return promise.all(pending).then(function() {
+          if (!_.isEmpty(errors)) {
+            var err = new Checkit.Error('Checkit - ' + _.keys(errors).length + ' invalid values');
+                err.fieldErrors = errors;
+            throw err;
+          }
+          return _.pick.apply(_, [target].concat(_.keys(validations)));
+        });
+
       });
+    },
+
+    // Runs through each of the `conditional` validations, and
+    // merges them with the other validations if the condition passes;
+    // either by returning `true` or a fulfilled promise.
+    checkConditional: function(conditional) {
+      var runner, validations = this.validations;
+      return promise.fulfilled().then(function() {
+        return conditional[1].call(runner, runner.target);
+      }).then(function(result) {
+
+        // Only if we explicitly return `true` do we go ahead
+        // and add the validations to the stack for a particular rule.
+        if (result === true) {
+          var newVals = conditional[0];
+          for (var key in newVals) {
+            validations[key] = validations[key] || [];
+            validations[key].concat(newVals[key]);
+          }
+        }
+
+      // We don't need to worry about thrown errors or failed promises,
+      // because they're just a sign we're not supposed to run this rule.
+      }, function(err) {});
     },
 
     // Processes an individual item in the validation collection for the current
     // validation object. Returns the value from the completed validation, which will
     // be a boolean, or potentially a promise if the current object is an async validation.
     processItem: function(currentValidation, key) {
-      var result, checkit = this.checkit;
+      var result;
       var runner  = this, errors  = this.errors;
       var value   = this.target[key];
       var rule    = currentValidation.rule;
@@ -254,11 +293,11 @@ define(function(_, promiseLib, promiseImpl) {
 
   };
 
-  var Validator = function(runner) {
+  // Constructor for running the `Validations`.
+  var Validator = Checkit.Validator = function(runner) {
     this._language = runner.language;
     this._target   = runner.target;
   };
-
   Validator.prototype = Validators;
 
   // Validation helpers & regex
@@ -271,6 +310,11 @@ define(function(_, promiseLib, promiseImpl) {
   function checkNumber(val) {
     if (!Validators.isNumeric(val))
       throw new Error("The validator argument must be a valid number");
+  }
+
+  function checkString(val) {
+    if (!_.isString(val))
+      throw new Error("The validator argument must be a valid string");
   }
 
   // Standard regular expression validators.
@@ -486,6 +530,8 @@ define(function(_, promiseLib, promiseImpl) {
     }
   }
 
+  // Set the promise implementation, as it's determined
+  // in the UMD block below.
   Checkit.setPromiseLib(promiseLib, promiseImpl);
 
   return Checkit;
@@ -496,47 +542,52 @@ define(function(_, promiseLib, promiseImpl) {
 // get the correct dependencies and initialize everything.
 })(function(checkitLib) {
 
-  // Node.js... we're just gonna go with `bluebird` here.
+  // Node.js.
+  // -----
   if (typeof exports === 'object') {
 
+    // We're just gonna go with `bluebird` here.
     module.exports = checkitLib(require('underscore'), require('bluebird'), 'bluebird');
 
   // AMD
+  // -----
   } else if (typeof define === 'function' && define.amd) {
 
-    // "when" is the preferred promise lib for AMD, since it's the fastest
-    // lib supporting (pretty much) all browsers...
+    // `when` is the preferred promise lib for AMD, since it's the fastest
+    // lib with the best known browser support.
     define('checkit', ['underscore', 'when'], function(_, when) {
       return checkitLib(_, when, 'when');
     });
 
-  // and then browser globals...
+  // Browser globals...
+  // -----
   } else {
 
     var promiseLib, promiseImpl, root = this, lastCheckit = root.Checkit;
 
-    // First, check for "Promise"... a-la bluebird...
+    // First, check for `Promise`
     if (typeof Promise === 'function') {
-      promiseLib  = Promise; promiseImpl = 'bluebird';
+      promiseLib = Promise; promiseImpl = 'bluebird';
     }
 
-    // Then, check for Q.
+    // then for `Q`
     else if (typeof Q === 'function') {
-      promiseLib  = Q; promiseImpl = 'Q';
+      promiseLib = Q; promiseImpl = 'Q';
     }
 
-    // When is only available as a global if you shim the AMD yourself,
+    // `when` is only available as a global if you shim `require` yourself,
     // which is highly unlikey, but possible.
     else if (typeof when === 'function') {
       promiseLib = when; promiseImpl = 'when';
     }
 
-    // Then, check for $... we'll assume that
+    // Then, check for `$` - we'll assume that
     // if you're using this lib, you're on a jQuery version >= 1.8.
     else if (typeof jQuery === 'function') {
       promiseLib  = jQuery; promiseImpl = '$';
     }
 
+    // Finally, supply a "noConflict" for `checkit`.
     var checkit = root.checkit = checkitLib(root._, promiseLib, promiseImpl);
     checkit.noConflict = function() {
       root.checkit = lastCheckit;
