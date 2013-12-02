@@ -542,25 +542,19 @@ umd(function(_, promiseLib, promiseImpl) {
 // get the correct dependencies and initialize everything.
 })(function(checkitLib) {
 
-  // Node.js.
-  // -----
-  if (typeof exports === 'object') {
+  // AMD setup
+  if (typeof define === 'function' && define.amd) {
 
-    // We're just gonna go with `bluebird` here.
-    module.exports = checkitLib(require('underscore'), require('bluebird'), 'bluebird');
-
-  // AMD
-  // -----
-  } else if (typeof define === 'function' && define.amd) {
-
-    // `when` is the preferred promise lib for AMD, since it's the fastest
-    // lib with the best known browser support.
-    define('checkit', ['underscore', 'when'], function(_, when) {
-      return checkitLib(_, when, 'when');
+    define(['underscore', 'bluebird'], function(_, Promise) {
+      return checkitLib(_, Promise, 'bluebird');
     });
 
-  // Browser globals...
-  // -----
+  // CJS setup
+  } else if (typeof exports === 'object') {
+
+    module.exports = checkitLib(require('underscore'), require('bluebird'), 'bluebird');
+
+  // Browser globals
   } else {
 
     var promiseLib, promiseImpl, root = this, lastCheckit = root.Checkit;

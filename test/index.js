@@ -1,4 +1,4 @@
-var Promise   = require('Bluebird');
+var Promise   = require('bluebird');
 var _         = require('underscore');
 var Checkit   = require('../checkit');
 var testBlock = require('./block');
