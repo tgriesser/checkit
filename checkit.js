@@ -303,7 +303,7 @@ umd(function(_, promiseLib, promiseImpl) {
   // Validation helpers & regex
 
   function checkInt(val) {
-    if (!_.isInteger(val))
+    if (!val.match(Checkit.regex.integer))
       throw new Error("The validator argument must be a valid integer");
   }
 
