@@ -11,7 +11,9 @@
   },
   "dependencies": {
     "underscore": "~1.5.1",
-    "bluebird": "~0.10.5-0"
+    "bluebird": "~0.10.5-0",
+    "create-error": "~0.1.0",
+    "lodash": "~2.4.1"
   },
   "devDependencies": {
     "mocha": "~1.13.0",

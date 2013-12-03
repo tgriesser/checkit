@@ -64,7 +64,7 @@ var deepEqual = require('assert').deepEqual;
 
       it('fails with an invalid email', function(ok) {
         handler(Checkit({emailFail: ['email']}).run(testBlock), ok, function(err) {
-          equal(err.get('emailFail').toString(), ['Errors with emailFail: The emailFail must be a valid email address. ']);
+          equal(err.get('emailFail').toString(), 'Errors with emailFail: The emailFail must be a valid email address.');
         });
       });
 

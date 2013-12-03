@@ -2,11 +2,11 @@
 //     http://tgriesser.com/checkit
 //     (c) 2013 Tim Griesser
 //     Checkit may be freely distributed under the MIT license.
-(function(umd) {
+(function(factory) {
 
 "use strict";
 
-umd(function(_, promiseLib, promiseImpl) {
+factory(function(_, createError, promiseLib, promiseImpl) {
 
   // The top level `Checkit` constructor, accepting the
   // `validations` to be run and any (optional) `options`.
@@ -97,7 +97,7 @@ umd(function(_, promiseLib, promiseImpl) {
         // the validated items.
         return promise.all(pending).then(function() {
           if (!_.isEmpty(errors)) {
-            var err = new Checkit.Error('Checkit - ' + _.keys(errors).length + ' invalid values');
+            var err = new CheckitError('Checkit - ' + _.keys(errors).length + ' invalid values');
                 err.fieldErrors = errors;
             throw err;
           }
@@ -162,7 +162,7 @@ umd(function(_, promiseLib, promiseImpl) {
         } else if (_['is' + capitalize(rule)]) {
           result = _['is' + capitalize(rule)].apply(_, params);
         } else {
-          var valErr = new Checkit.ValidationError('No validation defined for ' + rule);
+          var valErr = new ValidationError('No validation defined for ' + rule);
               valErr.validationObject = currentValidation;
           throw valErr;
         }
@@ -172,13 +172,13 @@ umd(function(_, promiseLib, promiseImpl) {
       // it's a failed validation... throw it as a `Checkit.ValidationError`.
       }).then(function(result) {
         if (_.isBoolean(result) && result === false) {
-          throw new Checkit.ValidationError(runner.getMessage(currentValidation, key));
+          throw new ValidationError(runner.getMessage(currentValidation, key));
         }
       // Finally, catch any errors thrown from in the validation.
       }).then(null, function(err) {
         var fieldError;
         if (!(fieldError = errors[key])) {
-          fieldError = errors[key] = new Checkit.FieldError('Errors with field ' + key);
+          fieldError = errors[key] = new FieldError('Errors with field ' + key);
           fieldError.key = key;
         }
         // Attach the "rule" in case we want to reference it.
@@ -334,28 +334,15 @@ umd(function(_, promiseLib, promiseImpl) {
     url: /^((http|https):\/\/(\w+:{0,1}\w*@)?(\S+)|)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-\/]))?$/
   };
 
-
-  var ErrorCtor = function(){ this.constructor = Error; };
-  ErrorCtor.prototype = Error.prototype;
-
   // An error for an individual "validation", where one or more "validations"
   // make up a single ruleset. These are grouped together into a `FieldError`.
-  var ValidationError = Checkit.ValidationError = function(message) {
-    this.name = 'ValidationError';
-    this.message = message || 'ValidationError';
-  };
-  ValidationError.prototype = new ErrorCtor;
+  var ValidationError = Checkit.ValidationError = createError('ValidationError');
 
   // An `Error` object specific to an individual field,
   // useful in the `Checkit.check` method when you're only
   // validating an individual field. It contains an "errors"
   // array which keeps track of any falidations
-  var FieldError = Checkit.FieldError = function(message) {
-    this.name = 'FieldError';
-    this.message = message || 'FieldError';
-    this.validationErrors = [];
-  };
-  FieldError.prototype = new ErrorCtor;
+  var FieldError = Checkit.FieldError = createError('FieldError', {validationErrors: []});
 
   _.extend(FieldError.prototype, {
 
@@ -368,7 +355,7 @@ umd(function(_, promiseLib, promiseImpl) {
     toString: function(flat) {
       var errors = flat ? [this.validationErrors[0]] : this.validationErrors;
       return 'Errors with ' + this.key + ': ' +
-        _.pluck(errors, 'message').join(', ') + '. ';
+        _.pluck(errors, 'message').join(', ') + '.';
     },
 
     // Returns the current error in json format, by calling `toJSON`
@@ -385,12 +372,7 @@ umd(function(_, promiseLib, promiseImpl) {
   // An object that inherits from the `Error` prototype,
   // but contains methods for working with the individual errors
   // created by the failed Checkit validation object.
-  var CheckitError = Checkit.Error = function(message) {
-    this.name = 'CheckitError';
-    this.message || message || 'CheckitError';
-    this.fieldErrors = {};
-  };
-  CheckitError.prototype = new ErrorCtor;
+  var CheckitError = Checkit.Error = createError('CheckitError', {fieldErrors: {}});
 
   _.extend(CheckitError.prototype, {
 
@@ -545,14 +527,19 @@ umd(function(_, promiseLib, promiseImpl) {
   // AMD setup
   if (typeof define === 'function' && define.amd) {
 
-    define(['underscore', 'bluebird'], function(_, Promise) {
-      return checkitLib(_, Promise, 'bluebird');
+    define(['lodash', 'create-error', 'bluebird'], function(_, createError, Promise) {
+      return checkitLib(_, createError, Promise, 'bluebird');
     });
 
   // CJS setup
   } else if (typeof exports === 'object') {
 
-    module.exports = checkitLib(require('underscore'), require('bluebird'), 'bluebird');
+    module.exports = checkitLib(
+      require('lodash'),
+      require('create-error'),
+      require('bluebird'),
+      'bluebird'
+    );
 
   // Browser globals
   } else {
@@ -582,7 +569,7 @@ umd(function(_, promiseLib, promiseImpl) {
     }
 
     // Finally, supply a "noConflict" for `checkit`.
-    var checkit = root.checkit = checkitLib(root._, promiseLib, promiseImpl);
+    var checkit = root.checkit = checkitLib(root._, root.createError, promiseLib, promiseImpl);
     checkit.noConflict = function() {
       root.checkit = lastCheckit;
       return checkit;
