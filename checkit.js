@@ -111,7 +111,8 @@ umd(function(_, promiseLib, promiseImpl) {
     // merges them with the other validations if the condition passes;
     // either by returning `true` or a fulfilled promise.
     checkConditional: function(conditional) {
-      var runner, validations = this.validations;
+      var runner = this
+        , validations = this.validations;
       return promise.fulfilled().then(function() {
         return conditional[1].call(runner, runner.target);
       }).then(function(result) {
@@ -122,7 +123,7 @@ umd(function(_, promiseLib, promiseImpl) {
           var newVals = conditional[0];
           for (var key in newVals) {
             validations[key] = validations[key] || [];
-            validations[key].concat(newVals[key]);
+            validations[key] = validations[key].concat(newVals[key]);
           }
         }
 
