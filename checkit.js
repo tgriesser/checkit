@@ -151,7 +151,6 @@ umd(function(_, promiseLib, promiseImpl) {
       // Create a fulfilled promise, so we can safely
       // run any function and not have a thrown error mess up our day.
       return promise.fulfilled().then(function() {
-        console.log(rule);
         if (_.isFunction(rule)) {
           result = rule.apply(runner, params);
         } else if (Validators[rule]) {
@@ -163,9 +162,6 @@ umd(function(_, promiseLib, promiseImpl) {
           result = _[rule].apply(_, params);
         } else if (_['is' + capitalize(rule)]) {
           result = _['is' + capitalize(rule)].apply(_, params);
-        } else if (_.isRegExp(rule)) {
-          console.log('regexp rule...');
-          result = rule.test(value);
         } else {
           var valErr = new Checkit.ValidationError('No validation defined for ' + rule);
               valErr.validationObject = currentValidation;
