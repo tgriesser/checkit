@@ -6,7 +6,7 @@
 
 "use strict";
 
-factory(function(_, createError, promiseLib, promiseImpl) {
+factory(function(_, createError, Promise) {
 
   // The top level `Checkit` constructor, accepting the
   // `validations` to be run and any (optional) `options`.
@@ -14,11 +14,15 @@ factory(function(_, createError, promiseLib, promiseImpl) {
     if (!(this instanceof Checkit)) {
       return new Checkit(validations, options);
     }
-    this.labels      = {};
+    options = _.clone(options || {});
     this.conditional = [];
+    this.language    = options.language;
+    this.labels      = options.labels || {};
+    this.messages    = options.messages || {};
     this.validations = prepValidations(validations || {});
-    this.options     = options || {};
   };
+
+  Checkit.VERSION = '0.2.0';
 
   Checkit.prototype = {
 
@@ -58,10 +62,11 @@ factory(function(_, createError, promiseLib, promiseImpl) {
   // The validator is the object which is dispatched with the `run`
   // call from the `checkit.run` method.
   var Runner = Checkit.Runner = function(base) {
+    this.errors      = {};
+    this.base        = base;
     this.validations = _.clone(base.validations);
     this.conditional = base.conditional;
-    this.errors      = {};
-    this.language    = Checkit.i18n[base.options.language || Checkit.language];
+    this.language    = Checkit.i18n[base.language || Checkit.language];
     this.labelTransform = base.labelTransform || Checkit.labelTransform;
   };
 
@@ -78,7 +83,7 @@ factory(function(_, createError, promiseLib, promiseImpl) {
         pending.push(this.checkConditional(this.conditional[i]));
       }
 
-      return promise.all(pending).then(function() {
+      return Checkit.Promise.all(pending).then(function() {
 
         // Use a fresh "pending" stack.
         var pending = [];
@@ -95,10 +100,10 @@ factory(function(_, createError, promiseLib, promiseImpl) {
         // Once all promise blocks have finished, we'll know whether
         // the promise should be rejected with an error or resolved with
         // the validated items.
-        return promise.all(pending).then(function() {
+        return Checkit.Promise.all(pending).then(function() {
           if (!_.isEmpty(errors)) {
-            var err = new CheckitError('Checkit - ' + _.keys(errors).length + ' invalid values');
-                err.fieldErrors = errors;
+            var err = new CheckitError(_.keys(errors).length + ' invalid values');
+                err.errors = errors;
             throw err;
           }
           return _.pick.apply(_, [target].concat(_.keys(validations)));
@@ -111,12 +116,10 @@ factory(function(_, createError, promiseLib, promiseImpl) {
     // merges them with the other validations if the condition passes;
     // either by returning `true` or a fulfilled promise.
     checkConditional: function(conditional) {
-      var runner = this
-        , validations = this.validations;
-      return promise.fulfilled().then(function() {
+      var runner = this, validations = this.validations;
+      return Checkit.Promise.resolve(true).then(function() {
         return conditional[1].call(runner, runner.target);
       }).then(function(result) {
-
         // Only if we explicitly return `true` do we go ahead
         // and add the validations to the stack for a particular rule.
         if (result === true) {
@@ -126,7 +129,6 @@ factory(function(_, createError, promiseLib, promiseImpl) {
             validations[key] = validations[key].concat(newVals[key]);
           }
         }
-
       // We don't need to worry about thrown errors or failed promises,
       // because they're just a sign we're not supposed to run this rule.
       }, function(err) {});
@@ -150,18 +152,18 @@ factory(function(_, createError, promiseLib, promiseImpl) {
 
       // Create a fulfilled promise, so we can safely
       // run any function and not have a thrown error mess up our day.
-      return promise.fulfilled().then(function() {
+      return Checkit.Promise.resolve(true).then(function() {
         if (_.isFunction(rule)) {
           result = rule.apply(runner, params);
         } else if (Validators[rule]) {
           var v = new Validator(runner);
           result = v[rule].apply(v, params);
-        } else if (regex[rule]) {
-          result = regex[rule].test(value);
         } else if (_[rule]) {
           result = _[rule].apply(_, params);
         } else if (_['is' + capitalize(rule)]) {
           result = _['is' + capitalize(rule)].apply(_, params);
+        } else if (Regex[rule]) {
+          result = Regex[rule].test(value);
         } else {
           var valErr = new ValidationError('No validation defined for ' + rule);
               valErr.validationObject = currentValidation;
@@ -179,21 +181,22 @@ factory(function(_, createError, promiseLib, promiseImpl) {
       }).then(null, function(err) {
         var fieldError;
         if (!(fieldError = errors[key])) {
-          fieldError = errors[key] = new FieldError('Errors with field ' + key);
+          fieldError = errors[key] = new FieldError(err);
           fieldError.key = key;
         }
         // Attach the "rule" in case we want to reference it.
         err.rule = rule;
-        fieldError.validationErrors.push(err);
+        fieldError.errors.push(err);
       });
     },
 
     // Gets the formatted messaage for the validation error, depending
     // on what's passed and whatnot.
     getMessage: function(item, key) {
+      var base     = this.base;
       var language = this.language;
-      var label    = item.label   || language.labels[key] || this.labelTransform(key);
-      var message  = item.message || language.messages[item.rule] || language.messages.fallback;
+      var label    = item.label   || base.labels[key] || language.labels[key] || this.labelTransform(key);
+      var message  = item.message || base.messages[item.rule] || language.messages[item.rule] || language.messages.fallback;
       message = message.replace(labelRegex, label);
       for (var i = 0, l = item.params.length; i < l; i++) {
         message = message.replace(varRegex(i+1), item.params[i]);
@@ -282,9 +285,11 @@ factory(function(_, createError, promiseLib, promiseImpl) {
       return checkNumber(val) || checkNumber(param) || parseFloat(val) <= parseFloat(param);
     },
 
-    // Check if this item is a plain object.
+    // Check if this item is a plain object, defaulting to the lodash check,
+    // otherwise using a simple underscore fallback.
     isPlainObject: function(val) {
-      return (_.isObject(val) && !_.isFunction(val) && !_.isArray(val));
+      return _.isPlainObject ? _.isPlainObject.apply(this, arguments) :
+        (_.isObject(val) && !_.isFunction(val) && !_.isArray(val));
     },
 
     // Check if the value is numeric
@@ -304,7 +309,7 @@ factory(function(_, createError, promiseLib, promiseImpl) {
   // Validation helpers & regex
 
   function checkInt(val) {
-    if (!val.match(Checkit.regex.integer))
+    if (!val.match(Regex.integer))
       throw new Error("The validator argument must be a valid integer");
   }
 
@@ -319,20 +324,20 @@ factory(function(_, createError, promiseLib, promiseImpl) {
   }
 
   // Standard regular expression validators.
-  var regex = Checkit.regex = {
-    integer: /^\-?[0-9]+$/,
-    email: /^[a-z0-9._%+\-]+@[a-z0-9.\-]+\.[a-z]{2,6}$/i,
+  var Regex = Checkit.Regex = {
     alpha: /^[a-z]+$/i,
-    alphaNumeric: /^[a-z0-9]+$/i,
     alphaDash: /^[a-z0-9_\-]+$/i,
+    alphaNumeric: /^[a-z0-9]+$/i,
     alphaUnderscore: /^[a-z0-9_]+$/i,
+    base64: /^(?:[A-Za-z0-9+\/]{4})*(?:[A-Za-z0-9+\/]{2}==|[A-Za-z0-9+\/]{3}=)?$/,
+    email: /^[a-z0-9._%+\-]+@[a-z0-9.\-]+\.[a-z]{2,6}$/i,
+    integer: /^\-?[0-9]+$/,
+    ipv4: /^((25[0-5]|2[0-4][0-9]|1[0-9]{2}|[0-9]{1,2})\.){3}(25[0-5]|2[0-4][0-9]|1[0-9]{2}|[0-9]{1,2})$/i,
+    luhn: /^(?:4[0-9]{12}(?:[0-9]{3})?|5[1-5][0-9]{14}|6(?:011|5[0-9][0-9])[0-9]{12}|3[47][0-9]{13}|3(?:0[0-5]|[68][0-9])[0-9]{11}|(?:2131|1800|35\d{3})\d{11})$/,
     natural: /^[0-9]+$/i,
     naturalNonZero: /^[1-9][0-9]*$/i,
-    ipv4: /^((25[0-5]|2[0-4][0-9]|1[0-9]{2}|[0-9]{1,2})\.){3}(25[0-5]|2[0-4][0-9]|1[0-9]{2}|[0-9]{1,2})$/i,
-    base64: /^(?:[A-Za-z0-9+\/]{4})*(?:[A-Za-z0-9+\/]{2}==|[A-Za-z0-9+\/]{3}=)?$/,
-    luhn: /^(?:4[0-9]{12}(?:[0-9]{3})?|5[1-5][0-9]{14}|6(?:011|5[0-9][0-9])[0-9]{12}|3[47][0-9]{13}|3(?:0[0-5]|[68][0-9])[0-9]{11}|(?:2131|1800|35\d{3})\d{11})$/,
-    uuid: /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i,
-    url: /^((http|https):\/\/(\w+:{0,1}\w*@)?(\S+)|)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-\/]))?$/
+    url: /^((http|https):\/\/(\w+:{0,1}\w*@)?(\S+)|)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-\/]))?$/,
+    uuid: /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
   };
 
   // An error for an individual "validation", where one or more "validations"
@@ -343,26 +348,22 @@ factory(function(_, createError, promiseLib, promiseImpl) {
   // useful in the `Checkit.check` method when you're only
   // validating an individual field. It contains an "errors"
   // array which keeps track of any falidations
-  var FieldError = Checkit.FieldError = createError('FieldError', {validationErrors: []});
+  var FieldError = Checkit.FieldError = createError('FieldError', {errors: []});
 
   _.extend(FieldError.prototype, {
-
-    first: function() {
-      return this.validationErrors[0];
-    },
 
     // Call `toString` on the current field, which should
     // turn the error into the format:
     toString: function(flat) {
-      var errors = flat ? [this.validationErrors[0]] : this.validationErrors;
-      return 'Errors with ' + this.key + ': ' +
-        _.pluck(errors, 'message').join(', ') + '.';
+      var errors = flat ? [this.errors[0]] : this.errors;
+      return this.key + ': ' +
+        _.pluck(errors, 'message').join(', ');
     },
 
     // Returns the current error in json format, by calling `toJSON`
     // on the error, if there is one, otherwise returning the message.
     toJSON: function() {
-      return _.map(this.validationErrors, function(err) {
+      return this.map(function(err) {
         if (err.toJSON) return err.toJSON();
         return err.message;
       });
@@ -373,30 +374,47 @@ factory(function(_, createError, promiseLib, promiseImpl) {
   // An object that inherits from the `Error` prototype,
   // but contains methods for working with the individual errors
   // created by the failed Checkit validation object.
-  var CheckitError = Checkit.Error = createError('CheckitError', {fieldErrors: {}});
+  var CheckitError = Checkit.Error = createError('CheckitError', {errors: {}});
 
   _.extend(CheckitError.prototype, {
 
     get: function(name) {
-      return this.fieldErrors[name];
+      return this.errors[name];
     },
 
     // Convert the current error object toString, by stringifying the JSON representation
     // of the object.
     toString: function(flat) {
-      return 'Checkit Errors - ' + _.invoke(this.fieldErrors, 'toString', flat).join(', ');
+      return 'Checkit Errors - ' + this.invoke('toString', flat).join('; ');
     },
 
     // Creates a JSON object of the validations, if `true` is passed - it will
     // flatten the error into a single value per item.
     toJSON: function(flat) {
-      return _.reduce(this.fieldErrors, function(memo, val, key) {
-        var json = val.toJSON();
-        memo[key] = flat ? _.first(json) : json;
+      return this.reduce(function(memo, val, key) {
+        memo[key] = val.toJSON();
         return memo;
       }, {});
     }
 
+  });
+
+  // Similar to a Backbone.js `Model` or `Collection`, we'll mixin the underscore
+  // methods that make sense to act on `CheckitError.errors` or `FieldError.errors`.
+  var objMethods   = ['keys', 'values', 'pairs', 'invert', 'pick', 'omit'];
+  var arrMethods   = ['first', 'initial', 'rest', 'last'];
+  var shareMethods = ['forEach', 'each', 'map', 'reduce', 'reduceRight',
+    'find', 'filter', 'reject', 'invoke', 'toArray', 'size', 'shuffle'];
+
+  _.each(shareMethods.concat(objMethods), function(method) {
+    CheckitError.prototype[method] = function() {
+      return _[method].apply(_, [this.errors].concat(_.toArray(arguments)));
+    };
+  });
+  _.each(shareMethods.concat(arrMethods), function(method) {
+    FieldError.prototype[method] = function() {
+      return _[method].apply(_, [this.errors].concat(_.toArray(arguments)));
+    };
   });
 
   // Used to transform the label before using it, can be
@@ -427,14 +445,14 @@ factory(function(_, createError, promiseLib, promiseImpl) {
         lessThan: 'The {{label}} must be a number less than {{var_1}}',
         lessThanEqualTo: 'The {{label}} must be a number less than or equal to {{var_1}}',
         greaterThanEqualTo: 'The {{label}} must be a number greater than or equal to {{var_1}}',
-        isNumeric: 'The {{label}} must be a numeric value',
+        numeric: 'The {{label}} must be a numeric value',
 
         // Underscore Predicates
-        isDate: 'The {{label}} must be a Date',
-        isEqual: 'The {{label}} does not match {{var_1}}',
-        isBoolean: 'The {{label}} must be type "boolean"',
-        isEmpty: 'The {{label}} must be empty',
-        isArray: 'The {{label}} must be an array',
+        date: 'The {{label}} must be a Date',
+        equal: 'The {{label}} does not match {{var_1}}',
+        'boolean': 'The {{label}} must be type "boolean"',
+        empty: 'The {{label}} must be empty',
+        array: 'The {{label}} must be an array',
 
         // Regex specific messages.
         alpha: 'The {{label}} must only contain alphabetical characters',
@@ -451,24 +469,6 @@ factory(function(_, createError, promiseLib, promiseImpl) {
         // If there is no validation provided for an item, use this generic line.
         fallback: 'Validation for {{label}} did not pass'
       }
-    }
-  };
-
-  var promise;
-
-  // If you really want to... you can use this function to pass in a
-  // specific promise implementation...
-  Checkit.setPromiseLib = function(lib, impl) {
-    if (impl === '$') {
-      promise = {
-        fulfilled: function() { return lib.when(); },
-        all: function() { return lib.when.apply(lib, arguments); }
-      };
-    } else {
-      promise = {
-        fulfilled: (impl === 'when' ? lib.resolve : lib.fulfilled),
-        all: lib.all
-      };
     }
   };
 
@@ -493,9 +493,7 @@ factory(function(_, createError, promiseLib, promiseImpl) {
       var validation = validations[key];
       if (!_.isArray(validation)) validations[key] = validation = [validation];
       for (var i = 0, l = validation.length; i < l; i++) {
-        if (!Validators.isPlainObject(validation[i])) {
-          validation[i] = assembleValidation(validation[i]);
-        }
+        validation[i] = assembleValidation(validation[i]);
       }
     }
     return validations;
@@ -505,20 +503,24 @@ factory(function(_, createError, promiseLib, promiseImpl) {
   // containing the rule, any arguments split from the `:` delimeter,
   // and the
   function assembleValidation(validation) {
-    if (_.isString(validation)) {
-      var splitRule = validation.split(':');
-      return {rule: splitRule[0], params: _.rest(splitRule)};
-    } else if (_.isFunction(validation)) {
-      return {rule: validation, params: []};
+    if (!Validators.isPlainObject(validation)) {
+      validation = {rule: validation, params: []};
     }
+    if (_.isString(validation.rule)) {
+      var splitRule = validation.rule.split(':');
+      validation.rule = splitRule[0];
+      if (_.isEmpty(validation.params)) {
+        validation.params = _.rest(splitRule);
+      }
+    } else if (!_.isFunction(validation.rule)) {
+      throw new TypeError('Invalid validation');
+    }
+    return validation;
   }
 
-  // Set the promise implementation, as it's determined
-  // in the UMD block below.
-  Checkit.setPromiseLib(promiseLib, promiseImpl);
+  Checkit.Promise = Promise;
 
   return Checkit;
-
 });
 
 // Boilerplate UMD definition block...
@@ -527,55 +529,18 @@ factory(function(_, createError, promiseLib, promiseImpl) {
 
   // AMD setup
   if (typeof define === 'function' && define.amd) {
-
-    define(['lodash', 'create-error', 'bluebird'], function(_, createError, Promise) {
-      return checkitLib(_, createError, Promise, 'bluebird');
-    });
-
+    define(['lodash', 'create-error', 'bluebird'], checkitLib);
   // CJS setup
   } else if (typeof exports === 'object') {
-
-    module.exports = checkitLib(
-      require('lodash'),
-      require('create-error'),
-      require('bluebird'),
-      'bluebird'
-    );
-
+    module.exports = checkitLib(require('lodash'), require('create-error'), require('bluebird'));
   // Browser globals
   } else {
-
-    var promiseLib, promiseImpl, root = this, lastCheckit = root.Checkit;
-
-    // First, check for `Promise`
-    if (typeof Promise === 'function') {
-      promiseLib = Promise; promiseImpl = 'bluebird';
-    }
-
-    // then for `Q`
-    else if (typeof Q === 'function') {
-      promiseLib = Q; promiseImpl = 'Q';
-    }
-
-    // `when` is only available as a global if you shim `require` yourself,
-    // which is highly unlikey, but possible.
-    else if (typeof when === 'function') {
-      promiseLib = when; promiseImpl = 'when';
-    }
-
-    // Then, check for `$` - we'll assume that
-    // if you're using this lib, you're on a jQuery version >= 1.8.
-    else if (typeof jQuery === 'function') {
-      promiseLib  = jQuery; promiseImpl = '$';
-    }
-
-    // Finally, supply a "noConflict" for `checkit`.
-    var checkit = root.checkit = checkitLib(root._, root.createError, promiseLib, promiseImpl);
-    checkit.noConflict = function() {
+    var root = this;
+    var Checkit = root.Checkit = checkitLib(root._, root.createError, root.Promise);
+    Checkit.noConflict = function() {
       root.checkit = lastCheckit;
       return checkit;
     };
-
   }
 
 });

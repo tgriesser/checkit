@@ -1,7 +1,9 @@
 
-var uuid = require('node-uuid');
+var uuid = typeof require !== "undefined" ? require('node-uuid') : global.uuid;
 
-module.exports = {
+global.testBlock = (function(){
+
+return {
   email: 'tgriesser10@gmail.com',
   emailFail: 'tgriesser(at)gmail(dot)com',
 
@@ -74,4 +76,7 @@ YXQgYnkgYSBwZXJzZXZlcmFuY2Ugb2YgZGVsaWdodCBpbiB0aGUgY29udGludWVkIGFuZCBpbmRlZmF0
 bmVyYXRpb24gb2Yga25vd2xlZGdlLCBleGNlZWRzIHRoZSBzaG9ydCB2ZWhlbWVuY2Ugb2YgYW55IGNhcm5hbCBwbGVhc3VyZS4='
 
   // , isUndefined :
+
 };
+
+})();

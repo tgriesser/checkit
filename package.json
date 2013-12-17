@@ -10,20 +10,13 @@
     "test": "test"
   },
   "dependencies": {
-    "underscore": "~1.5.1",
-    "bluebird": "~0.10.5-0",
-    "create-error": "~0.1.0",
-    "lodash": "~2.4.1"
+    "bluebird": ">=0.11.0",
+    "create-error": ">=0.2.1",
+    "lodash": ">=2.4.0"
   },
   "devDependencies": {
-    "mocha": "~1.13.0",
-    "objectdump": "~0.3.0",
-    "underscore": "~1.5.1",
-    "grunt": "~0.4.1",
-    "grunt-release": "~0.5.1",
-    "node-uuid": "~1.4.1",
-    "bluebird": "~0.9.7-0",
-    "when": "~2.6.0"
+    "mocha": "~1.15.0",
+    "node-uuid": "~1.4.1"
   },
   "repository": {
     "type": "git",
