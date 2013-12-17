@@ -1,4 +1,4 @@
-describe('validation suite', function() {
+describe('Checkit', function() {
 
   var handler = function(dfd, ok, onRejected) {
     dfd.then(null, onRejected).then(function() {
@@ -8,60 +8,74 @@ describe('validation suite', function() {
     });
   };
 
-  describe('accepted', function() {
+  describe('.check', function() {
 
-    it('passes with on', function(ok) {
-      handler(Checkit({
-        accepted1: 'accepted',
-        accepted2: 'accepted',
-        accepted3: 'accepted',
-        accepted4: 'accepted'
-      }).run(testBlock), ok);
-    });
+    it('should accept a field, value, and rules', function(ok) {
 
-  });
-
-  describe('between', function() {
-
-    it('should pass for numbers', function(ok) {
-      handler(Checkit({
-        integer: ['between:10:15']
-      }).run(testBlock), ok);
-    });
-
-    it('should pass for numbers in strings', function(ok) {
-      handler(Checkit({
-        stringInteger: ['between:10:15']
-      }).run(testBlock), ok);
-    });
-
-    it('should fail if the value is outside the range', function(ok) {
-      handler(Checkit({
-        integer: ['between:0:10']
-      }).run(testBlock), ok, function() {});
-    });
-
-  });
-
-  describe('emails', function() {
-
-    it('passes with a valid email', function(ok) {
-      handler(Checkit({email: ['email']}).run(testBlock), ok);
-    });
-
-    it('does not run on an empty input', function(ok) {
-      handler(Checkit({email: ['email']}).run(testBlock), ok);
-    });
-
-    it('fails with an invalid email', function(ok) {
-      handler(Checkit({emailFail: ['email']}).run(testBlock), ok, function(err) {
-        equal(err.get('emailFail').toString(), 'emailFail: The emailFail must be a valid email address');
+      Checkit.check('email', 'tim@tgriesser', ['required', 'email']).then(null, function(err) {
+        equal(err instanceof Checkit.FieldError, true);
+        equal(err.message, 'The email must be a valid email address');
+        ok();
       });
+
     });
 
   });
 
-  describe('integer, numeric, number, NaN, bool validations', function() {
+  describe('validators', function() {
+
+    describe('accepted', function() {
+
+      it('passes with on', function(ok) {
+        handler(Checkit({
+          accepted1: 'accepted',
+          accepted2: 'accepted',
+          accepted3: 'accepted',
+          accepted4: 'accepted'
+        }).run(testBlock), ok);
+      });
+
+    });
+
+    describe('between', function() {
+
+      it('should pass for numbers', function(ok) {
+        handler(Checkit({
+          integer: ['between:10:15']
+        }).run(testBlock), ok);
+      });
+
+      it('should pass for numbers in strings', function(ok) {
+        handler(Checkit({
+          stringInteger: ['between:10:15']
+        }).run(testBlock), ok);
+      });
+
+      it('should fail if the value is outside the range', function(ok) {
+        handler(Checkit({
+          integer: ['between:0:10']
+        }).run(testBlock), ok, function() {});
+      });
+
+    });
+
+    describe('emails', function() {
+
+      it('passes with a valid email', function(ok) {
+        handler(Checkit({email: ['email']}).run(testBlock), ok);
+      });
+
+      it('does not run on an empty input', function(ok) {
+        handler(Checkit({email: ['email']}).run(testBlock), ok);
+      });
+
+      it('fails with an invalid email', function(ok) {
+        handler(Checkit({emailFail: ['email']}).run(testBlock), ok, function(err) {
+          equal(err.get('emailFail').toString(), 'emailFail: The emailFail must be a valid email address');
+        });
+      });
+
+    });
 
     describe('integer', function() {
       it('should pass for numbers and strings (positive and negative)', function(ok) {
@@ -128,26 +142,26 @@ describe('validation suite', function() {
       });
     });
 
-    describe('isBoolean', function() {
+    describe('boolean', function() {
 
       it('should pass for true and false', function(ok) {
         handler(Checkit({
-          isBooleanTrue: ['isBoolean'],
-          isBooleanFalse: ['isBoolean']
+          booleanTrue: ['boolean'],
+          booleanFalse: ['boolean']
         }).run(testBlock), ok);
       });
 
       it('should not pass for "true" and "false"', function(ok) {
         handler(Checkit({
-          trueString: ['isBoolean'],
-          falseString: ['isBoolean']
+          trueString: ['boolean'],
+          falseString: ['boolean']
         }).run(testBlock), ok, function() {});
       });
 
       it('should not pass for 0 and 1', function(ok) {
         handler(Checkit({
-          zero: ['isBoolean'],
-          one: ['isBoolean']
+          zero: ['boolean'],
+          one: ['boolean']
         }).run(testBlock), ok, function() {});
       });
 
@@ -185,37 +199,37 @@ describe('validation suite', function() {
 
     });
 
-  });
+    describe('misc', function() {
 
-  describe('misc', function() {
+      it('should check ipv4 and addresses', function(ok) {
+        handler(Checkit({ipv4: ['ipv4']}).run(testBlock), ok);
+      });
 
-    it('should check ipv4 and addresses', function(ok) {
-      handler(Checkit({ipv4: ['ipv4']}).run(testBlock), ok);
+      it('should return true on a valid base64 string', function(ok) {
+        handler(Checkit({base64: 'base64'}).run(testBlock), ok);
+      });
+
     });
 
-    it('should return true on a valid base64 string', function(ok) {
-      handler(Checkit({base64: 'base64'}).run(testBlock), ok);
+    describe('arguments', function() {
+
+      it('should pass with arguments', function(ok) {
+        handler(Checkit({isArguments: "isArguments"}).run(testBlock), ok);
+      });
+
     });
 
-  });
+    describe('isEmpty', function() {
 
-  describe('arguments', function() {
+      it('passes on empty string, array, object, null', function(ok) {
+        handler(Checkit({
+          isEmptyArray:  ['isEmpty'],
+          isEmptyString: ['isEmpty'],
+          isEmptyObject: ['isEmpty'],
+          isEmptyNull:   ['isEmpty']
+        }).run(testBlock), ok);
+      });
 
-    it('should pass with arguments', function(ok) {
-      handler(Checkit({isArguments: "isArguments"}).run(testBlock), ok);
-    });
-
-  });
-
-  describe('isEmpty', function() {
-
-    it('passes on empty string, array, object, null', function(ok) {
-      handler(Checkit({
-        isEmptyArray:  ['isEmpty'],
-        isEmptyString: ['isEmpty'],
-        isEmptyObject: ['isEmpty'],
-        isEmptyNull:   ['isEmpty']
-      }).run(testBlock), ok);
     });
 
   });

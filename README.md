@@ -2,7 +2,7 @@
 
 A DOM-independent validation library for **Node.js** and the **browser**.
 
-It allows you to seamlessly validate full javascript objects, defining custom messages, labels, and validations, with full support for asynchronous validations with promises.
+It allows you to seamlessly validate full javascript objects, defining custom messages, labels, and validations, with full support for asynchronous validations with promises. It supports [conditional validations](#conditional-validations), and has powerful, consistent [error structuring](#checkit-errors) and [utility methods](#error-utility-methods) for manipulating your errors' output any way you can imagine.
 
 ```js
 var mainRules = Checkit(rules);
@@ -18,6 +18,7 @@ mainRules
     }).join(''));
   });
 ```
+
 <!--
 The [annotated source](/checkit/docs/checkit.html) code is available for browsing.
 -->
@@ -29,6 +30,14 @@ Checkit has three hard dependencies:
 [underscore.js](http://underscorejs.org))
 - the [create-error](https://github.com/tgriesser/create-error) library
 - an A+ promise implementation, by default [bluebird](https://github.com/petkaantonov/bluebird), but this may be replaced with [Q](http://documentup.com/kriskowal/q/) or [when.js](https://github.com/cujojs/when).
+
+For more reading on promises, and the Bluebird API, take a look at following links:
+
+- [Why Promises?](https://github.com/petkaantonov/bluebird#what-are-promises-and-why-should-i-use-them)
+- [Bluebird API](https://github.com/petkaantonov/bluebird/blob/master/API.md)
+- [Promise Anti-Patterns](https://github.com/petkaantonov/bluebird/wiki/Promise-anti-patterns)
+- [Promise Nuggets](http://spion.github.io/promise-nuggets/)
+- [Snippets for Common Promise Code](https://github.com/petkaantonov/bluebird/wiki/Snippets)
 
 #### Node.js
 
@@ -53,7 +62,27 @@ The subsitute must be an "A+" promise implementation ([jQuery won't cut it](http
 Checkit.Promise = Q;
 ```
 
-## Basic Usage
+## API:
+
+### Checkit(validators, [options])
+
+The main `Checkit` constructor may be called with or without the `new` keyword, taking a hash of fields/rules for these fields to be validated.
+
+#### Options:
+
+##### language
+
+Used to specify the default language key for using a particular language []() block.
+
+##### labels
+
+
+
+##### messages
+
+
+
+#### Example:
 
 ```js
 var checkit = new Checkit({
@@ -71,8 +100,28 @@ var body = {
 
 checkit.run(body).then(function(validated) {
   console.log(validated);
+}).catch(Checkit.Error, function(err) {
+  console.log(err.toJSON());
 })
 ```
+
+### Checkit.check(key, value, rules)
+
+```js
+Checkit.check('email', email, ['required', 'validEmail'])
+  .catch(function(err) {
+    console.log(err.message)
+  });
+```
+
+### Checkit.Validators
+
+
+### Checkit.language
+
+### Checkit.i18n
+
+An object containing default language
 
 ## Available Validators
 
@@ -356,8 +405,19 @@ The main Error object, `Checkit.Error` is returned from the has several helper m
 
 #### .errors
 
-The "errors" property of a `Checkit.Error` object is a hash of
+The "errors" property of a `Checkit.Error` object is a hash of errors for each of the fields which are considered "invalid" in any way by the validation rules. The keys in this hash are the invalid fields, and the values are [Checkit.FieldError](#checkitfielderror) objects, which in-turn have an `errors` attribute, an array containing errors for each failed rule.
 
+#### .get(key)
+
+The `get` method returns the `Checkit.FieldError` object for a specific key, or `undefined` if one does not exist.
+
+#### .toString([flat])
+
+Useful for debugging, the `toString` method converts the `Checkit` error into a human readable representation of the failed validation. If the `flat` argument is passed as a "truthy" value, it will output only the first `ValidationError` in the `FieldError`; otherwise it will output each validation message in a comma separated string.
+
+#### .toJSON()
+
+Converts the current error object to a json representation of the error, for easy use/refinement elsewhere. For other methods, such as map, reduce, each, see the [utility methods](#utility-methods) section.
 
 ### Checkit.FieldError
 
@@ -371,9 +431,11 @@ The `errors` property of a `FieldError` is
 
 A `ValidationError` is the result of an individual error in the field rule.
 
-#### utility methods
+### Error Utility Methods
 
-##### shared
+The following methods are underscore methods proxied to the `Checkit.Error` and `Checkit.FieldError` objects, for easy manipulation of the `.errors` object contained in each.
+
+##### shared (Checkit.Error & FieldError)
 
 - [each](http://underscorejs.org/#each)
 - [forEach](http://underscorejs.org/#each)
