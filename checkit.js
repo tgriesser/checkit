@@ -219,6 +219,13 @@ factory(function(_, createError, Promise) {
       return (this.greaterThan(val, min) &&
         this.lessThan(val, max));
     },
+    
+    // The item must be a number equal or larger than the given `min` and
+    // equal or smaller than the given `max` value.
+    range: function(val, min, max) {
+      return (this.greaterThanEqualTo(val, min) &&
+        this.lessThanEqualTo(val, max));
+    },    
 
     // Check that an item contains another item, either a string,
     // array, or object.
