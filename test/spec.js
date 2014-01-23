@@ -59,6 +59,38 @@ describe('Checkit', function() {
 
     });
 
+    describe('range', function() {
+      it('should pass for numbers', function(ok) {
+        handler(Checkit({
+          integer: ['between:10:15']
+        }).run(testBlock), ok);
+      });
+
+      it('should pass for numbers in strings', function(ok) {
+        handler(Checkit({
+          stringInteger: ['between:10:15']
+        }).run(testBlock), ok);
+      });
+
+      it('should fail if the value is outside the range', function(ok) {
+        handler(Checkit({
+          integer: ['between:0:10']
+        }).run(testBlock), ok, function() {});
+      });
+
+      it('should treat the min values as inclusive', function(ok) {
+        handler(Checkit({
+          integer: ['between:12:13']
+        }).run(testBlock), ok, function() {});
+      });
+
+      it('should treat the max values as inclusive', function(ok) {
+        handler(Checkit({
+          integer: ['between:0:12']
+        }).run(testBlock), ok, function() {});
+      });
+    });
+
     describe('emails', function() {
 
       it('passes with a valid email', function(ok) {
