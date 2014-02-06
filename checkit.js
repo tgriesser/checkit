@@ -333,9 +333,11 @@ factory(function(_, createError, Promise) {
   // Standard regular expression validators.
   var Regex = Checkit.Regex = {
     alpha: /^[a-z]+$/i,
-    alphaDash: /^[a-z0-9_\-]+$/i,
     alphaNumeric: /^[a-z0-9]+$/i,
-    alphaUnderscore: /^[a-z0-9_]+$/i,
+    alphaUnderscore: /^[a-z0-9_]+$/i, // Deprecated
+    alphaNumericUnderscore: /^[a-z0-9_]+$/i,
+    alphaDash: /^[a-z0-9_\-]+$/i, // Deprecated
+    alphaNumericDashUnderscore: /^[a-z0-9_\-]+$/i,
     base64: /^(?:[A-Za-z0-9+\/]{4})*(?:[A-Za-z0-9+\/]{2}==|[A-Za-z0-9+\/]{3}=)?$/,
     email: /^[a-z0-9._%+\-]+@[a-z0-9.\-]+\.[a-z]{2,6}$/i,
     integer: /^\-?[0-9]+$/,
@@ -462,10 +464,12 @@ factory(function(_, createError, Promise) {
         array: 'The {{label}} must be an array',
 
         // Regex specific messages.
-        alpha: 'The {{label}} must only contain alphabetical characters',
-        alphaDash: 'The {{label}} must only contain alpha-numeric characters, underscores, and dashes',
+        alpha: 'The {{label}} must only contain letters',
         alphaNumeric: 'The {{label}} must only contain alpha-numeric characters',
-        alphaUnderscore: 'The {{label}} must only contain alpha-numeric characters, underscores, and dashes',
+        alphaUnderscore: 'The {{label}} must only contain alpha-numeric characters and underscores', // Deprecated
+        alphaNumericUnderscore: 'The {{label}} must only contain alpha-numeric characters and underscores',
+        alphaDash: 'The {{label}} must only contain alpha-numeric characters, underscores, and dashes', // Deprecated
+        alphaNumericDashUnderscore: 'The {{label}} must only contain alpha-numeric characters, underscores, and dashes',
         natural: 'The {{label}} must be a positive number',
         naturalNonZero: 'The {{label}} must be a number greater than zero',
         ipv4: 'The {{label}} must be a valid IPv4 string',
