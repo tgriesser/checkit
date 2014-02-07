@@ -369,8 +369,8 @@ You may also specify an object in one of the validator slots, specifying at the 
     label: 'first name of this application'
   }],
   arr: {
-    rule: 'contains', // different behavior than "contains:10"
-    params: [10]
+    rule: 'contains',
+    params: [10] // Number => Different behavior than "contains:10"
   }
 }
 ```
