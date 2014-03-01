@@ -34,6 +34,9 @@ return {
 
   ipv4: '192.168.0.1',
 
+  ipv6Long: '2001:cdba:0000:0000:0000:0000:3257:9652',
+  ipv6Short: '::',
+
   isFunction: function() {
     return true;
   },

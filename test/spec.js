@@ -199,6 +199,22 @@ describe('Checkit', function() {
 
     });
 
+    describe('ipv6', function() {
+
+      it('should pass for short ipv6', function(ok) {
+        handler(Checkit({
+          ipv6Short: ['ipv6']
+        }).run(testBlock), ok);
+      });
+
+      it('should pass for long ipv6', function(ok) {
+        handler(Checkit({
+          ipv6Long: ['ipv6']
+        }).run(testBlock), ok);
+      });
+
+    });
+
     describe('uuid', function() {
 
       it('should pass for uuid v1', function(ok) {

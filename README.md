@@ -225,7 +225,11 @@ An object containing default language
     </tr>
     <tr>
       <td>ipv4</td>
-      <td>The value must be formatted as an IP address.</td>
+      <td>The value must be formatted as an IPv4 address.</td>
+    </tr>
+    <tr>
+      <td>ipv6</td>
+      <td>The value must be formatted as an IPv6 address.</td>
     </tr>
     <tr>
       <td>lessThan:value</td>
