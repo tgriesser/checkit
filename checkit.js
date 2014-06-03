@@ -452,6 +452,7 @@ factory(function(_, createError, Promise) {
         maxLength: 'The {{label}} must not exceed {{var_1}} characters long',
         lessThan: 'The {{label}} must be a number less than {{var_1}}',
         lessThanEqualTo: 'The {{label}} must be a number less than or equal to {{var_1}}',
+        greaterThan: 'The {{label}} must be a number greater than {{var_1}}',
         greaterThanEqualTo: 'The {{label}} must be a number greater than or equal to {{var_1}}',
         numeric: 'The {{label}} must be a numeric value',
 
