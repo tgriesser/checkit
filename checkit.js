@@ -455,6 +455,8 @@ factory(function(_, createError, Promise) {
         greaterThan: 'The {{label}} must be a number greater than {{var_1}}',
         greaterThanEqualTo: 'The {{label}} must be a number greater than or equal to {{var_1}}',
         numeric: 'The {{label}} must be a numeric value',
+        matchesField: 'The {{label}} must exactly match the {{var_1}}',
+        different: 'The {{label}} must be different than the {{var_1}}',
 
         // Underscore Predicates
         date: 'The {{label}} must be a Date',
