@@ -138,7 +138,9 @@ describe('Checkit', function() {
       it('should fail for NaN', function(ok) {
         handler(Checkit({
           isNaN: 'isNumeric'
-        }).run(testBlock), ok, function() {});
+        }).run(testBlock), ok, function(err) {
+          equal(err.get('isNaN').toString(), 'isNaN: The isNaN must be a numeric value');
+        });
       });
 
     });
