@@ -123,21 +123,21 @@ describe('Checkit', function() {
     describe('numeric', function() {
       it('should only pass for numbers for negative numbers and strings', function(ok) {
         handler(Checkit({
-          negativeInteger: 'isNumeric',
-          negativeStringInteger: 'isNumeric'
+          negativeInteger: 'numeric',
+          negativeStringInteger: 'numeric'
         }).run(testBlock), ok);
       });
 
       it('should pass for positive numbers and strings', function(ok) {
         handler(Checkit({
-          integer: 'isNumeric',
-          stringInteger: 'isNumeric'
+          integer: 'numeric',
+          stringInteger: 'numeric'
         }).run(testBlock), ok);
       });
 
       it('should fail for NaN', function(ok) {
         handler(Checkit({
-          isNaN: 'isNumeric'
+          isNaN: 'numeric'
         }).run(testBlock), ok, function() {});
       });
 

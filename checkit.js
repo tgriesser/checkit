@@ -300,7 +300,7 @@ factory(function(_, createError, Promise) {
     },
 
     // Check if the value is numeric
-    isNumeric: function(val) {
+    numeric: function(val) {
       return !isNaN(parseFloat(val)) && isFinite(val);
     }
 
@@ -321,7 +321,7 @@ factory(function(_, createError, Promise) {
   }
 
   function checkNumber(val) {
-    if (!Validators.isNumeric(val))
+    if (!Validators.numeric(val))
       throw new Error("The validator argument must be a valid number");
   }
 
