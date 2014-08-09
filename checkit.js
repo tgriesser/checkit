@@ -221,6 +221,13 @@ factory(function(_, createError, Promise) {
       return (this.greaterThan(val, min) &&
         this.lessThan(val, max));
     },
+    
+    // The item must be a number equal or larger than the given `min` and
+    // equal or smaller than the given `max` value.
+    range: function(val, min, max) {
+      return (this.greaterThanEqualTo(val, min) &&
+        this.lessThanEqualTo(val, max));
+    },    
 
     // Check that an item contains another item, either a string,
     // array, or object.
@@ -295,7 +302,7 @@ factory(function(_, createError, Promise) {
     },
 
     // Check if the value is numeric
-    isNumeric: function(val) {
+    numeric: function(val) {
       return !isNaN(parseFloat(val)) && isFinite(val);
     }
 
@@ -316,7 +323,7 @@ factory(function(_, createError, Promise) {
   }
 
   function checkNumber(val) {
-    if (!Validators.isNumeric(val))
+    if (!Validators.numeric(val))
       throw new Error("The validator argument must be a valid number");
   }
 
@@ -335,6 +342,7 @@ factory(function(_, createError, Promise) {
     email: /^[a-z0-9._%+\-]+@[a-z0-9.\-]+\.[a-z]{2,6}$/i,
     integer: /^\-?[0-9]+$/,
     ipv4: /^((25[0-5]|2[0-4][0-9]|1[0-9]{2}|[0-9]{1,2})\.){3}(25[0-5]|2[0-4][0-9]|1[0-9]{2}|[0-9]{1,2})$/i,
+    ipv6: /^((?=.*::)(?!.*::.+::)(::)?([\dA-F]{1,4}:(:|\b)|){5}|([\dA-F]{1,4}:){6})((([\dA-F]{1,4}((?!\3)::|:\b|$))|(?!\2\3)){2}|(((2[0-4]|1\d|[1-9])?\d|25[0-5])\.?\b){4})$/i,
     luhn: /^(?:4[0-9]{12}(?:[0-9]{3})?|5[1-5][0-9]{14}|6(?:011|5[0-9][0-9])[0-9]{12}|3[47][0-9]{13}|3(?:0[0-5]|[68][0-9])[0-9]{11}|(?:2131|1800|35\d{3})\d{11})$/,
     natural: /^[0-9]+$/i,
     naturalNonZero: /^[1-9][0-9]*$/i,
@@ -446,8 +454,11 @@ factory(function(_, createError, Promise) {
         maxLength: 'The {{label}} must not exceed {{var_1}} characters long',
         lessThan: 'The {{label}} must be a number less than {{var_1}}',
         lessThanEqualTo: 'The {{label}} must be a number less than or equal to {{var_1}}',
+        greaterThan: 'The {{label}} must be a number greater than {{var_1}}',
         greaterThanEqualTo: 'The {{label}} must be a number greater than or equal to {{var_1}}',
         numeric: 'The {{label}} must be a numeric value',
+        matchesField: 'The {{label}} must exactly match the {{var_1}}',
+        different: 'The {{label}} must be different than the {{var_1}}',
 
         // Underscore Predicates
         date: 'The {{label}} must be a Date',
@@ -464,6 +475,7 @@ factory(function(_, createError, Promise) {
         natural: 'The {{label}} must be a positive number',
         naturalNonZero: 'The {{label}} must be a number greater than zero',
         ipv4: 'The {{label}} must be a valid IPv4 string',
+        ipv6: 'The {{label}} must be a valid IPv6 address',
         base64: 'The {{label}} must be a base64 string',
         luhn: 'The {{label}} must be a valid credit card number',
         uuid: 'The {{label}} must be a valid uuid',
