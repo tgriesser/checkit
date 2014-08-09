@@ -82,6 +82,10 @@ Used to specify the default language key for using a particular language []() bl
 
 
 
+##### context
+
+An arbitrary object of values. When specified, the context will be passed to a validation's `rule` function. 
+
 #### Example:
 
 ```js
@@ -375,6 +379,29 @@ You may also specify an object in one of the validator slots, specifying at the 
   arr: {
     rule: 'contains',
     params: [10] // Number => Different behavior than "contains:10"
+  }
+}
+```
+
+You may also use the `context` property passed to the `Checkit` instance when using a function on the validation array of a property. This can be particularly useful if your validation function needs to execute within a transaction:
+
+```js
+{
+  email: {
+    rule: function(val, params, context){
+      var query = knex('users');
+      if (context && context.transacting){
+        query.transacting(context.transacting);
+      }
+      
+      return query.where('email', '=', val)
+        .andWhere('id', '<>', this.target.id)
+        .then(function(resp){
+          if (resp.length > 0){
+            throw new Error('The email address is already in use.');
+          }
+        });
+    }
   }
 }
 ```
