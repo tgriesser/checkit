@@ -82,10 +82,6 @@ Used to specify the default language key for using a particular language []() bl
 
 
 
-##### context
-
-An arbitrary object of values. When specified, the context will be passed to a validation's `rule` function. 
-
 #### Example:
 
 ```js
@@ -383,7 +379,7 @@ You may also specify an object in one of the validator slots, specifying at the 
 }
 ```
 
-You may also use the `context` property passed to the `Checkit` instance when using a function on the validation array of a property. This can be particularly useful if your validation function needs to execute within a transaction:
+You may also use the `context` parameter passed to `run` when using a function on the validation array of a property. This can be particularly useful if your validation function needs to execute within a transaction:
 
 ```js
 {

@@ -359,8 +359,8 @@ describe('Checkit', function() {
           }
         }
       };
-      Checkit(rulesTest).run({failedRuleTest: null}).then(null, function(err){
-        equal(err.get('fails').message, 'thrown from rule function');
+      Checkit(rulesTest).run({failedRuleTest: "value"}).then(null, function(err){
+        equal(err.get('failedRuleTest').message, 'thrown from rule function');
       }).then(function() {
         ok();
       }, ok);
@@ -373,22 +373,22 @@ describe('Checkit', function() {
           rule: function(val, param){
             equal(parameter, param);
           },
-          parameter: parameter
+          params: parameter
         }
       };
-      handler(Checkit(rulesTest).run({parameterTest: null}), ok);
+      handler(Checkit(rulesTest).run({parameterTest: "value"}), ok);
     })
     
-    it('should pass the context property supplied to the checkit instance to the rule function', function(ok){
-      var checkitContext = 'the context';
+    it('should pass the context property supplied to the run function to the rule function', function(ok){
+      var runContext = 'the context';
       var rulesTest = {
         contextTest: {
           rule: function(val, params, context){
-            equal(context, checkitContext);
+            equal(runContext, context);
           }
         }
       }
-      handler(Checkit(rulesTest, {context: checkitContext}).run({contextTest: null}), ok);
+      handler(Checkit(rulesTest).run({contextTest: "value"}, runContext), ok);
     })
     
   });
