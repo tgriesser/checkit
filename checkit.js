@@ -134,13 +134,27 @@ factory(function(_, createError, Promise) {
       }, function(err) {});
     },
 
+    // Get value corresponding to key containing "." from nested object.
+    // If key containing "." is proper in object (e.g. {"foo.bar": 100}) return 100.
+    getVal: function(key){
+      var value = _.clone(this.target),
+          keys;
+      if(value[key]) return value[key];
+      if((keys = key.split(".")).length === 0) return undefined;
+
+      while(keys.length > 0){
+        value = value[keys.shift()];
+      }
+      return value;
+    },
+
     // Processes an individual item in the validation collection for the current
     // validation object. Returns the value from the completed validation, which will
     // be a boolean, or potentially a promise if the current object is an async validation.
     processItem: function(currentValidation, key) {
       var result;
       var runner  = this, errors  = this.errors;
-      var value   = this.target[key];
+      var value   = this.getVal(key);
       var rule    = currentValidation.rule;
       var params  = [value].concat(currentValidation.params);
 
@@ -149,7 +163,6 @@ factory(function(_, createError, Promise) {
       if (rule !== 'accepted' && rule !== 'exists' && rule !== 'required') {
         if (value === '' || value == null) return;
       }
-
       // Create a fulfilled promise, so we can safely
       // run any function and not have a thrown error mess up our day.
       return Checkit.Promise.resolve(true).then(function() {
@@ -219,13 +232,13 @@ factory(function(_, createError, Promise) {
       return (this.greaterThan(val, min) &&
         this.lessThan(val, max));
     },
-    
+
     // The item must be a number equal or larger than the given `min` and
     // equal or smaller than the given `max` value.
     range: function(val, min, max) {
       return (this.greaterThanEqualTo(val, min) &&
         this.lessThanEqualTo(val, max));
-    },    
+    },
 
     // Check that an item contains another item, either a string,
     // array, or object.
