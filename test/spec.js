@@ -374,4 +374,12 @@ describe('Checkit', function() {
 
   });
 
+  describe('nested items', function(){
+    it('validates for nested items', function(ok){
+      handler(Checkit({
+        "info.email": ['required', 'email']
+      }).run({info: {email: "joe@gmail.com"}}), ok);
+    });
+  });
+
 });
