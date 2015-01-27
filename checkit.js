@@ -468,6 +468,7 @@ factory(function(_, createError, Promise) {
         greaterThan: 'The {{label}} must be a number greater than {{var_1}}',
         greaterThanEqualTo: 'The {{label}} must be a number greater than or equal to {{var_1}}',
         between: 'The {{label}} must be a number between {{var_1}} and {{var_2}}',
+        range: 'The {{label}} must be a number equal or larger than {{var_1}} and equal or smaller than {{var_2}}',
         numeric: 'The {{label}} must be a numeric value',
         matchesField: 'The {{label}} must exactly match the {{var_1}}',
         different: 'The {{label}} must be different than the {{var_1}}',
