@@ -457,6 +457,7 @@ factory(function(_, createError, Promise) {
       messages: {
 
         // Custom Predicates
+        accepted: 'The {{label}} must be yes, on, true, or 1',
         email: 'The {{label}} must be a valid email address',
         exactLength: 'The {{label}} must be exactly {{var_1}} characters long',
         exists: 'The {{label}} must be defined',
