@@ -483,6 +483,7 @@ factory(function(_, createError, Promise) {
         empty: 'The {{label}} must be empty',
         array: 'The {{label}} must be an array',
         'null': 'The {{label}} must be null',
+        'NaN': 'The {{label}} must be NaN',
 
         // Regex specific messages.
         alpha: 'The {{label}} must only contain alphabetical characters',
