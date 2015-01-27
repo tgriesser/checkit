@@ -485,6 +485,7 @@ factory(function(_, createError, Promise) {
         'null': 'The {{label}} must be null',
         'NaN': 'The {{label}} must be NaN',
         finite: 'The {{label}} must be a finite number',
+        'function': 'The {{label}} must be a function',
 
         // Regex specific messages.
         alpha: 'The {{label}} must only contain alphabetical characters',
