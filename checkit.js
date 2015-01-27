@@ -482,6 +482,7 @@ factory(function(_, createError, Promise) {
         'boolean': 'The {{label}} must be type "boolean"',
         empty: 'The {{label}} must be empty',
         array: 'The {{label}} must be an array',
+        'null': 'The {{label}} must be null',
 
         // Regex specific messages.
         alpha: 'The {{label}} must only contain alphabetical characters',
