@@ -472,6 +472,7 @@ factory(function(_, createError, Promise) {
         numeric: 'The {{label}} must be a numeric value',
         matchesField: 'The {{label}} must exactly match the {{var_1}}',
         different: 'The {{label}} must be different than the {{var_1}}',
+        isPlainObject: 'The {{label}} must be a plain object',
 
         // Underscore Predicates
         date: 'The {{label}} must be a Date',
