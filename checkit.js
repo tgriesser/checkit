@@ -487,6 +487,7 @@ factory(function(_, createError, Promise) {
         finite: 'The {{label}} must be a finite number',
         'function': 'The {{label}} must be a function',
         'arguments': 'The {{label}} must be a javascript "arguments" object',
+        regExp: 'The {{label}} must be a javascript RegExp object',
 
         // Regex specific messages.
         alpha: 'The {{label}} must only contain alphabetical characters',
