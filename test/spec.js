@@ -329,7 +329,7 @@ describe('Checkit', function() {
       Checkit(containsTest).run({arr: [0, 10, 20]}).then(function() {
         return Checkit(_.extend(containsTest, {arr: 'contains:10'})).run({arr: [0, 10, 20]});
       }).then(null, function(err) {
-        equal(err.get('arr').message, 'Validation for arr did not pass');
+        equal(err.get('arr').message, 'The arr must contains 10');
       }).then(function() {
         ok();
       }, ok);
@@ -351,7 +351,7 @@ describe('Checkit', function() {
         .then(function() {
           return Promise.reject(new Error('Should not pass'));
         }, function(err) {
-          equal(err.toString(), 'Checkit Errors - email: Validation for email did not pass');
+          equal(err.toString(), 'Checkit Errors - email: The email must contains tim');
         })
         .then(null, ok)
         .then(function() {
