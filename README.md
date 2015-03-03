@@ -474,7 +474,7 @@ The following methods are underscore methods proxied to the `Checkit.Error` and 
 
 ### Checkit.labelTransform(fn)
 
-The `Checkit.labelTransform` method takes a function which
+The `Checkit.labelTransform` method takes a function that receives the field name and returns a human-readable label for use in error messages.
 
 
 ## Change Log
