@@ -36,8 +36,8 @@ factory(function(_, createError, Promise) {
     // Asynchronously runs a validation block, returning a promise
     // which resolves with the validated object items, or is rejected
     // with a `Checkit.Error` instance.
-    run: function(target) {
-      return new Checkit.Runner(this).run(target);
+    run: function(target, context) {
+      return new Checkit.Runner(this).run(target, context);
     }
 
   };
@@ -73,8 +73,9 @@ factory(function(_, createError, Promise) {
   Runner.prototype = {
 
     // Runs the validations on a specified "target".
-    run: function(target) {
+    run: function(target, context) {
       target = this.target = _.clone(target || {});
+      context = this.context = _.clone(context || {});
       var runner = this, validations = this.validations,
         errors = this.errors,
         pending = [];
@@ -156,7 +157,7 @@ factory(function(_, createError, Promise) {
       var runner  = this, errors  = this.errors;
       var value   = this.getVal(key);
       var rule    = currentValidation.rule;
-      var params  = [value].concat(currentValidation.params);
+      var params  = [value].concat(currentValidation.params).concat(this.context);
 
       // If the rule isn't an existence / required check, return
       // true if the value doesn't exist.

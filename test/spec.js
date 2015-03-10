@@ -337,6 +337,62 @@ describe('Checkit', function() {
 
   });
 
+  describe('custom validation rules', function() {
+    
+    it('should run the rule function on the supplied value', function(ok) {
+      var value = 'value';
+      var rulesTest = {
+        valueTest: {
+          rule: function(val) {
+            equal(value, val);
+          }
+        }
+      };
+      handler(Checkit(rulesTest).run({valueTest: value}), ok);
+    })
+    
+    it('should fail when the validation rule throws an error', function(ok){
+      var rulesTest = {
+        failedRuleTest: {
+          rule: function(val){
+            throw new Error('thrown from rule function');
+          }
+        }
+      };
+      Checkit(rulesTest).run({failedRuleTest: "value"}).then(null, function(err){
+        equal(err.get('failedRuleTest').message, 'thrown from rule function');
+      }).then(function() {
+        ok();
+      }, ok);
+    })
+    
+    it('should pass the supplied parameter to the validation rule', function(ok){
+      var parameter = 'parameter';
+      var rulesTest = {
+        parameterTest: {
+          rule: function(val, param){
+            equal(parameter, param);
+          },
+          params: parameter
+        }
+      };
+      handler(Checkit(rulesTest).run({parameterTest: "value"}), ok);
+    })
+    
+    it('should pass the context property supplied to the run function to the rule function', function(ok){
+      var runContext = 'the context';
+      var rulesTest = {
+        contextTest: {
+          rule: function(val, params, context){
+            equal(runContext, context);
+          }
+        }
+      }
+      handler(Checkit(rulesTest).run({contextTest: "value"}, runContext), ok);
+    })
+    
+  });
+
   describe('conditional items', function() {
 
     var checkit = Checkit({

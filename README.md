@@ -379,6 +379,29 @@ You may also specify an object in one of the validator slots, specifying at the 
 }
 ```
 
+You may also use the `context` parameter passed to `run` when using a function on the validation array of a property. This can be particularly useful if your validation function needs to execute within a transaction:
+
+```js
+{
+  email: {
+    rule: function(val, params, context){
+      var query = knex('users');
+      if (context && context.transacting){
+        query.transacting(context.transacting);
+      }
+      
+      return query.where('email', '=', val)
+        .andWhere('id', '<>', this.target.id)
+        .then(function(resp){
+          if (resp.length > 0){
+            throw new Error('The email address is already in use.');
+          }
+        });
+    }
+  }
+}
+```
+
 Second, you may add a custom validator to the `Checkit.Validators` object, returning a boolean value or a promise.
 
 ```js
