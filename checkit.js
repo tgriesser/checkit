@@ -204,7 +204,7 @@ factory(function(_, createError, Promise) {
       });
     },
 
-    // Gets the formatted messaage for the validation error, depending
+    // Gets the formatted message for the validation error, depending
     // on what's passed and whatnot.
     getMessage: function(item, key) {
       var base     = this.base;
