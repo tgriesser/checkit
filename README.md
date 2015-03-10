@@ -138,62 +138,16 @@ An object containing default language
       <td>The value must be yes, on, or 1. This is useful for validating "Terms of Service" acceptance.</td>
     </tr>
     <tr>
-      <td>alpha</td>
-      <td>The value must be entirely alphabetic characters.</td>
-    </tr>
-    <tr>
-      <td>alphaDash</td>
-      <td>The value may have alpha-numeric characters, as well as dashes and underscores.</td>
-    </tr>
-    <tr>
-      <td>alphaNumeric</td>
-      <td>The value must be entirely alpha-numeric characters.</td>
-    </tr>
-    <tr>
-      <td>alphaUnderscore</td>
-      <td>The value must be entirely alpha-numeric, with underscores but not dashes.</td>
-    </tr>
-    <tr>
-      <td>arguments</td>
-      <td>The value must be
-      a javascript "arguments" object.</td>
-    </tr>
-    <tr>
-      <td>array</td>
-      <td>The value must be
-      a valid array object.</td>
-    </tr>
-    <tr>
-      <td>base64</td>
-      <td>The value must be a base64 encoded value.</td>
-    </tr>
-    <tr>
       <td>between:min:max</td>
       <td>The value must have a size between the given min and max.</td>
-    </tr>
-    <tr>
-      <td>boolean</td>
-      <td>The value must be a javascript boolean.</td>
     </tr>
     <tr>
       <td>contains:value</td>
       <td>The value must contain the value. For a string, it does an "indexOf" check, an array "_.indexOf" and for an object "_.has".</td>
     </tr
     <tr>
-      <td>date</td>
-      <td>The value must be a valid date object.</td>
-    </tr>
-    <tr>
       <td>different:fieldName</td>
       <td>The given field must be different than the `fieldName` under validation.</td>
-    </tr>
-    <tr>
-      <td>email</td>
-      <td>The field must be a valid formatted e-mail address.</td>
-    </tr>
-    <tr>
-      <td>empty</td>
-      <td>The value under validation must be empty; either an empty string, an empty, array, empty object, or a falsy value.</td>
     </tr>
     <tr>
       <td>exactLength:value</td>
@@ -204,14 +158,6 @@ An object containing default language
       <td>The value under validation must not be undefined.</td>
     </tr>
     <tr>
-      <td>finite</td>
-      <td>The value under validation must be a finite number.</td>
-    </tr>
-    <tr>
-      <td>function</td>
-      <td>The value under validation must be a function.</td>
-    </tr>
-    <tr>
       <td>greaterThan:value</td>
       <td>The value under validation must be "greater than" the given value.</td>
     </tr>
@@ -220,16 +166,12 @@ An object containing default language
       <td>The value under validation must be "greater than" or "equal to" the given value.</td>
     </tr>
     <tr>
-      <td>integer</td>
-      <td>The value must have an integer value.</td>
+      <td>isNumeric</td>
+      <td>The value must have a numeric value.</td>
     </tr>
     <tr>
-      <td>ipv4</td>
-      <td>The value must be formatted as an IPv4 address.</td>
-    </tr>
-    <tr>
-      <td>ipv6</td>
-      <td>The value must be formatted as an IPv6 address.</td>
+      <td>isPlainObject</td>
+      <td>The value must be an object literal.</td>
     </tr>
     <tr>
       <td>lessThan:value</td>
@@ -240,76 +182,20 @@ An object containing default language
       <td>The value must be "less than" or "equal to" the specified value.</td>
     </tr>
     <tr>
-      <td>luhn</td>
-      <td>The given value must pass a basic luhn (credit card) check regular expression.</td>
-    </tr>
-    <tr>
       <td>matchesField:fieldName</td>
       <td>The value must exactly match the value of another `fieldName` under validation.</td>
-    </tr>
-    <tr>
-      <td>max:value</td>
-      <td>The value must be less than a maximum value. Strings, numerics, and files are evaluated in the same fashion as the size rule.</td>
     </tr>
     <tr>
       <td>maxLength:value</td>
       <td>The value must have a length property which is less than or equal to the specified value. Note, this may be used with both arrays and strings.</td>
     </tr>
     <tr>
-      <td>min:value</td>
-      <td>The value must have a minimum value. Strings, numerics, and files are evaluated in the same fashion as the size rule.</td>
-    </tr>
-    <tr>
       <td>minLength:value</td>
       <td>The value must have a length property which is greater than or equal to the specified value. Note, this may be used with both arrays and strings.</td>
     </tr>
     <tr>
-      <td>NaN</td>
-      <td>The value must be <tt>NaN</tt>.</td>
-    </tr>
-    <tr>
-      <td>natural</td>
-      <td>The value must be a natural number (a number greater than or equal to 0).</td>
-    </tr>
-    <tr>
-      <td>naturalNonZero</td>
-      <td>The value must be a natural number, greater than or equal to 1.</td>
-    </tr>
-    <tr>
-      <td>null</td>
-      <td>The value must be <tt>null</tt>.</td>
-    </tr>
-    <tr>
-      <td>number</td>
-      <td>The value must be a javascript <tt>Number</tt>.</td>
-    </tr>
-    <tr>
-      <td>numeric</td>
-      <td>The value must have a numeric value.</td>
-    </tr>
-    <tr>
-      <td>object</td>
-      <td>The value must pass an <tt>_.isObject</tt> check.</td>
-    </tr>
-    <tr>
-      <td>plainObject</td>
-      <td>The value must be an object literal.</td>
-    </tr>
-    <tr>
-      <td>regExp</td>
-      <td>The value must be a javascript <tt>RegExp</tt> object.</td>
-    </tr>
-    <tr>
       <td>required</td>
       <td>The value must be present in the input data.</td>
-    </tr>
-    <tr>
-      <td>url</td>
-      <td>The value must be formatted as an URL.</td>
-    </tr>
-    <tr>
-      <td>uuid</td>
-      <td>Passes for a validly formatted UUID.</td>
     </tr>
   </tbody>
 </table>
