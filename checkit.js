@@ -458,6 +458,7 @@ factory(function(_, createError, Promise) {
       messages: {
 
         // Custom Predicates
+        accepted: 'The {{label}} must be yes, on, true, or 1',
         email: 'The {{label}} must be a valid email address',
         exactLength: 'The {{label}} must be exactly {{var_1}} characters long',
         exists: 'The {{label}} must be defined',
@@ -468,9 +469,13 @@ factory(function(_, createError, Promise) {
         lessThanEqualTo: 'The {{label}} must be a number less than or equal to {{var_1}}',
         greaterThan: 'The {{label}} must be a number greater than {{var_1}}',
         greaterThanEqualTo: 'The {{label}} must be a number greater than or equal to {{var_1}}',
+        between: 'The {{label}} must be a number between {{var_1}} and {{var_2}}',
+        range: 'The {{label}} must be a number equal or larger than {{var_1}} and equal or smaller than {{var_2}}',
+        contains: 'The {{label}} must contains {{var_1}}',
         numeric: 'The {{label}} must be a numeric value',
         matchesField: 'The {{label}} must exactly match the {{var_1}}',
         different: 'The {{label}} must be different than the {{var_1}}',
+        isPlainObject: 'The {{label}} must be a plain object',
 
         // Underscore Predicates
         date: 'The {{label}} must be a Date',
@@ -478,6 +483,12 @@ factory(function(_, createError, Promise) {
         'boolean': 'The {{label}} must be type "boolean"',
         empty: 'The {{label}} must be empty',
         array: 'The {{label}} must be an array',
+        'null': 'The {{label}} must be null',
+        'NaN': 'The {{label}} must be NaN',
+        finite: 'The {{label}} must be a finite number',
+        'function': 'The {{label}} must be a function',
+        'arguments': 'The {{label}} must be a javascript "arguments" object',
+        regExp: 'The {{label}} must be a javascript RegExp object',
 
         // Regex specific messages.
         alpha: 'The {{label}} must only contain alphabetical characters',
