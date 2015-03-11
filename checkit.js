@@ -1,15 +1,14 @@
-//     Checkit.js 0.5.0
+//     Checkit.js 0.6.0
 //     http://tgriesser.com/checkit
 //     (c) 2013-2015 Tim Griesser
 //     Checkit may be freely distributed under the MIT license.
+var Promise     = require('when').Promise
 var _           = require('lodash')
-var createError = require('create-error')
-var Promise     = require('when/es6-shim/Promise')
 var inherits    = require('inherits')
 
 // The top level `Checkit` constructor, accepting the
 // `validations` to be run and any additional `options`.
-var Checkit = function(validations, options) {
+function Checkit(validations, options) {
   if (!(this instanceof Checkit)) {
     return new Checkit(validations, options);
   }
@@ -21,7 +20,7 @@ var Checkit = function(validations, options) {
   this.labelTransform = options.labelTransform || Checkit.labelTransform
   this.validations    = prepValidations(validations || {});
   this.validator      = new Validator(this)
-};
+}
 
 Checkit.VERSION = '0.5.0';
 
@@ -217,7 +216,7 @@ function addError(errors, key, validation) {
   return function(err) {
     var fieldError = errors[key];
     if (!fieldError) {
-      fieldError = errors[key] = new FieldError(err)
+      fieldError = errors[key] = new FieldError(err.message)
       fieldError.key = key
     }
     err.rule = validation.rule
@@ -417,15 +416,27 @@ var Regex = Checkit.Regex = {
   uuid: /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
 };
 
+// Error Types
+// ---------------
+
+
 // An error for an individual "validation", where one or more "validations"
 // make up a single ruleset. These are grouped together into a `FieldError`.
-var ValidationError = createError('ValidationError');
+function ValidationError(message) {
+  this.message = message
+}
+ValidationError.prototype.toString = function() {
+  return this.message
+}
 
 // An `Error` object specific to an individual field,
 // useful in the `Checkit.check` method when you're only
 // validating an individual field. It contains an "errors"
 // array which keeps track of any falidations
-var FieldError = createError('FieldError', {errors: []});
+function FieldError(message) {
+  this.message = message
+  this.errors  = []
+}
 
 _.extend(FieldError.prototype, {
 
@@ -451,7 +462,10 @@ _.extend(FieldError.prototype, {
 // An object that inherits from the `Error` prototype,
 // but contains methods for working with the individual errors
 // created by the failed Checkit validation object.
-var CheckitError = createError('CheckitError', {errors: {}});
+function CheckitError(message) {
+  this.message = message;
+  this.errors  = {}
+}
 
 _.extend(CheckitError.prototype, {
 
@@ -539,7 +553,6 @@ function assembleValidation(validation) {
   return validation;
 }
 
-// feel free to swap this out if you'd like
 Checkit.FieldError      = FieldError
 Checkit.Error           = CheckitError
 Checkit.ValidationError = ValidationError

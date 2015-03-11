@@ -63,7 +63,7 @@ describe('Checkit - sync', function() {
 
       it('should fail if the value is outside the range', function() {
         var arr = Checkit({integer: ['between:0:10']}).runSync(testBlock)
-        assert(arr[0] instanceof Error)
+        assert(arr[0] instanceof Checkit.Error)
       });
 
       it('should treat the min values as inclusive', function() {
@@ -127,7 +127,7 @@ describe('Checkit - sync', function() {
         var arr = Checkit({
           isNaN: 'numeric'
         }).runSync(testBlock)
-        assert(arr[0] instanceof Error)
+        assert(arr[0] instanceof Checkit.Error)
       });
 
     });
@@ -145,7 +145,7 @@ describe('Checkit - sync', function() {
         var arr = Checkit({
           stringInteger: ['isNumber']
         }).runSync(testBlock)
-        assert(arr[0] instanceof Error)
+        assert(arr[0] instanceof Checkit.Error)
       });
 
       it('should pass for NaN', function() {
@@ -272,15 +272,6 @@ describe('Checkit - sync', function() {
         }).run(testBlock)
       });
 
-    });
-
-  });
-
-  describe('Checkit.Error', function () {
-
-    it('should be an instanceof Error', function () {
-      var error = new Checkit.Error(Checkit());
-      equal((error instanceof Error), true);
     });
 
   });

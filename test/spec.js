@@ -289,15 +289,6 @@ describe('Checkit', function() {
 
   });
 
-  describe('Checkit.Error', function () {
-
-    it('should be an instanceof Error', function () {
-      var error = new Checkit.Error(Checkit());
-      equal((error instanceof Error), true);
-    });
-
-  });
-
   describe('custom validation objects', function() {
 
     var vals = {
