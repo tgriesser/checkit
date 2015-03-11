@@ -2,6 +2,8 @@
 
 A DOM-independent validation library for **Node.js**, **io.js** and the **browser**.
 
+It supports both sync 
+
 It allows you to seamlessly validate full javascript objects, defining custom messages, labels, and validations, with full support for asynchronous validations with promises. It supports [conditional validations](#conditional-validations), and has powerful, consistent [error structuring](#checkit-errors) and [utility methods](#error-utility-methods) for manipulating your errors' output any way you can imagine.
 
 ```js
@@ -19,44 +21,15 @@ mainRules
   });
 ```
 
-## Installation
-
-Checkit has three hard dependencies:
-- an underscore library ([lo-dash](http://lodash.com) or
-[underscore.js](http://underscorejs.org))
-- the [create-error](https://github.com/tgriesser/create-error) library
-- an A+ promise implementation, by default [bluebird](https://github.com/petkaantonov/bluebird), but this may be replaced with [Q](http://documentup.com/kriskowal/q/) or [when.js](https://github.com/cujojs/when).
-
-For more reading on promises, and the Bluebird API, take a look at following links:
-
-- [Why Promises?](https://github.com/petkaantonov/bluebird#what-are-promises-and-why-should-i-use-them)
-- [Bluebird API](https://github.com/petkaantonov/bluebird/blob/master/API.md)
-- [Promise Anti-Patterns](https://github.com/petkaantonov/bluebird/wiki/Promise-anti-patterns)
-- [Promise Nuggets](http://spion.github.io/promise-nuggets/)
-- [Snippets for Common Promise Code](https://github.com/petkaantonov/bluebird/wiki/Snippets)
-
 #### Node.js
 
-Installing with node.js `npm install checkit`, your dependencies should be taken care of automatically.
+```
+npm install checkit
+```
 
 #### Browser
 
-The easiest way to use the library is with AMD, but if you prefer to use browser globals, you'll need to include all dependencies before using the library:
-
-```html
-<script src="/create-error.js"></script>
-<script src="/lodash.js"></script> <!-- (or underscore.js) -->
-<script src="/bluebird.js"></script>
-<script src="/checkit.js"></script>
-```
-
-If you'd prefer not to use "[bluebird](https://github.com/petkaantonov/bluebird)" as the promise implementation in the browser, you should change the AMD path to a different promise library, so that `Checkit.Promise` is set to an object containing two methods, `resolve` and `all`.
-
-The subsitute must be an "A+" promise implementation ([jQuery won't cut it](http://domenic.me/2012/10/14/youre-missing-the-point-of-promises/)), but `when.js` or `Q` would both be suitable to swap out; if using browser globals, like the following:
-
-```js
-Checkit.Promise = Q;
-```
+The easiest way to use the library is with [webpack](http://webpack.github.io) or [browserify](http://browserify.org)
 
 ## API:
 
@@ -68,15 +41,15 @@ The main `Checkit` constructor may be called with or without the `new` keyword, 
 
 ##### language
 
-Used to specify the default language key for using a particular language []() block.
+Used to specify the default language key for using a particular language file, currently en and es are supported.
 
 ##### labels
 
-
+Specifies labels for use in error messages for specific keys
 
 ##### messages
 
-
+Adds specific messages for individual errors
 
 #### Example:
 
@@ -110,14 +83,16 @@ Checkit.check('email', email, ['required', 'validEmail'])
   });
 ```
 
-### Checkit.Validators
+### Checkit.checkSync(key, value, rules)
 
+```js
+try {
+  Checkit.checkSync('email', email, ['required', 'validEmail'])  
+} catch (e) {
+  console.log(err.message)
+}
+```
 
-### Checkit.language
-
-### Checkit.i18n
-
-An object containing default language
 
 ## Available Validators
 

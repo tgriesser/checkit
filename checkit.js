@@ -44,7 +44,11 @@ Checkit.prototype.validate = function(target, context) {
 // validated, or throwing a `Checkit.Error` object.
 Checkit.prototype.runSync = 
 Checkit.prototype.validateSync = function(target, context) {
-  return new SyncRunner(this).run(target, context)
+  try  {
+    return [null, new SyncRunner(this).run(target, context)]  
+  } catch (err) {
+    return [err, null]
+  }
 }
 
 Checkit.prototype.getMessage = function(item, key) {
@@ -98,14 +102,12 @@ Checkit.checkSync = function(key, value, rules) {
 
 // Synchronously check an individual field against a rule.
 function checkSync(validations, input, key) {
-  try {
-    return new Checkit(validations).runSync(input)  
-  } catch(err) {
-    if (err instanceof CheckitError) {
-      throw err.get(key)
-    }
-    throw err
+  var arr = new Checkit(validations).runSync(input);
+  if (arr[0] === null) return arr;
+  if (arr[0] instanceof CheckitError) {
+    return [arr[0].get(key), null]
   }
+  return arr;
 }
 
 // The validator is the object which is dispatched with the `run`

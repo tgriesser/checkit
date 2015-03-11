@@ -7,7 +7,7 @@
     "test": "mocha -R spec test/index.js",
     "build": "npm run build:main && npm run build:dist",
     "build:main": "webpack --output-library Checkit --output-library-target umd checkit.js dist/checkit.js",
-    "build:dist":  "webpack --output-library Checkit --output-library-target umd --optimize-minimize checkit.js dist/checkit.min.js"
+    "build:dist": "webpack --output-library Checkit --output-library-target umd --optimize-minimize checkit.js dist/checkit.min.js"
   },
   "directories": {
     "test": "test"

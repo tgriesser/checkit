@@ -3,12 +3,9 @@ describe('Checkit - sync', function() {
   describe('.checkSync', function() {
 
     it('should accept a field, value, and rules', function() {
-      try {
-        Checkit.checkSync('email', 'tim@tgriesser', ['required', 'email'])
-      } catch (err) {
-        equal(err instanceof Checkit.FieldError, true);
-        equal(err.message, 'The email must be a valid email address');
-      }
+      var arr = Checkit.checkSync('email', 'tim@tgriesser', ['required', 'email'])
+      equal((arr[0] instanceof Checkit.FieldError), true);
+      equal(arr[0].message, 'The email must be a valid email address');
     });
 
   });
@@ -43,13 +40,10 @@ describe('Checkit - sync', function() {
       });
 
       it('should fail if the value is outside the range', function() {
-        try {
-          return Checkit({
-            integer: ['between:0:10']
-          }).runSync(testBlock)          
-        } catch (e) {
-          assert(e instanceof Checkit.Error)
-        }
+        var arr = Checkit({
+          integer: ['between:0:10']
+        }).runSync(testBlock)          
+        assert(arr[0] instanceof Checkit.Error)
       })
 
     });
@@ -64,15 +58,12 @@ describe('Checkit - sync', function() {
       it('should pass for numbers in strings', function() {
         deepEqual(Checkit({
           stringInteger: ['between:10:15']
-        }).runSync(testBlock), {stringInteger: testBlock.stringInteger})
+        }).runSync(testBlock)[1], {stringInteger: testBlock.stringInteger})
       });
 
-      it('should fail if the value is outside the range', function(ok) {
-        try {
-          Checkit({integer: ['between:0:10']}).runSync(testBlock)  
-        } catch (e) {
-          ok()
-        }
+      it('should fail if the value is outside the range', function() {
+        var arr = Checkit({integer: ['between:0:10']}).runSync(testBlock)
+        assert(arr[0] instanceof Error)
       });
 
       it('should treat the min values as inclusive', function() {
@@ -132,14 +123,11 @@ describe('Checkit - sync', function() {
         }).run(testBlock)
       });
 
-      it('should fail for NaN', function(ok) {
-        try {
-          Checkit({
-            isNaN: 'numeric'
-          }).runSync(testBlock)
-        } catch(e) {
-          ok()
-        }
+      it('should fail for NaN', function() {
+        var arr = Checkit({
+          isNaN: 'numeric'
+        }).runSync(testBlock)
+        assert(arr[0] instanceof Error)
       });
 
     });
@@ -153,12 +141,11 @@ describe('Checkit - sync', function() {
         }).runSync(testBlock)
       });
 
-      it('should fail for numbers in strings', function(ok) {
-        try {
-          Checkit({
-            stringInteger: ['isNumber']
-          }).runSync(testBlock)
-        } catch(e) { ok() }
+      it('should fail for numbers in strings', function() {
+        var arr = Checkit({
+          stringInteger: ['isNumber']
+        }).runSync(testBlock)
+        assert(arr[0] instanceof Error)
       });
 
       it('should pass for NaN', function() {
