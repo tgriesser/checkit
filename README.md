@@ -53,6 +53,9 @@ Adds specific messages for individual errors
 
 #### Example:
 
+### checkit.run
+### checkit.validate (alias)
+
 ```js
 var checkit = new Checkit({
   firstName: 'required',
@@ -74,6 +77,29 @@ checkit.run(body).then(function(validated) {
 })
 ```
 
+### checkit.runSync
+### checkit.validateSync (alias)
+
+```js
+var checkit = new Checkit({
+  firstName: 'required',
+  lastName: 'required',
+  email: ['required', 'email']
+});
+
+var body = {
+  email: 'test@example.com',
+  firstName: 'Tim',
+  lastName: 'Griesser',
+  githubUsername: 'tgriesser'
+};
+
+var [err, validated] = checkit.validateSync(body)
+
+// ...
+
+```
+
 ### Checkit.check(key, value, rules)
 
 ```js
@@ -86,13 +112,15 @@ Checkit.check('email', email, ['required', 'validEmail'])
 ### Checkit.checkSync(key, value, rules)
 
 ```js
-try {
-  Checkit.checkSync('email', email, ['required', 'validEmail'])  
-} catch (e) {
-  console.log(err.message)
+// ES6...
+var [err, resp] = Checkit.checkSync('email', email, ['required', 'validEmail'])  
+
+if (err) {
+  
+} else {
+  // ...
 }
 ```
-
 
 ## Available Validators
 
@@ -472,6 +500,12 @@ The `Checkit.labelTransform` method takes a function that receives the field nam
 
 
 ## Change Log
+
+### 0.5.0
+
+- Major internal refactoring, using when.js to shave bytes in the browser build.
+- Added sync api with runSync / checkSync / validateSync
+- Alias `validate` for `run`
 
 ### 0.2.0
 
