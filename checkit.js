@@ -1,10 +1,10 @@
-//     Checkit.js 0.5.0
+//     Checkit.js 0.5.1
 //     http://tgriesser.com/checkit
 //     (c) 2013-2015 Tim Griesser
 //     Checkit may be freely distributed under the MIT license.
 var _           = require('lodash')
 var createError = require('create-error')
-var Promise     = require('when/es6-shim/Promise')
+var Promise     = require('when').Promise
 var inherits    = require('inherits')
 
 // The top level `Checkit` constructor, accepting the
@@ -17,13 +17,12 @@ var Checkit = function(validations, options) {
   options             = _.clone(options || {});
   this.labels         = options.labels   || {};
   this.messages       = options.messages || {};
-  this.language       = Checkit.i18n[options.language || Checkit.language];
+  this.language       = Checkit.i18n[options.language || Checkit.language] || {};
   this.labelTransform = options.labelTransform || Checkit.labelTransform
   this.validations    = prepValidations(validations || {});
-  this.validator      = new Validator(this)
 };
 
-Checkit.VERSION = '0.5.0';
+Checkit.VERSION = '0.5.1';
 
 // Possibly run a validations on this object, depending on the
 // result of the `conditional` handler.
@@ -37,7 +36,7 @@ Checkit.prototype.maybe = function(validations, conditional) {
 // with a `Checkit.Error`
 Checkit.prototype.run =
 Checkit.prototype.validate = function(target, context) {
-  return new Runner(this).run(target, context);
+  return new Runner(this, target, context).run();
 }
 
 // Synchronously runs a validation block, returning an object of all fields
@@ -45,7 +44,7 @@ Checkit.prototype.validate = function(target, context) {
 Checkit.prototype.runSync = 
 Checkit.prototype.validateSync = function(target, context) {
   try  {
-    return [null, new SyncRunner(this).run(target, context)]  
+    return [null, new SyncRunner(this, target, context).run()]  
   } catch (err) {
     return [err, null]
   }
@@ -112,17 +111,20 @@ function checkSync(validations, input, key) {
 
 // The validator is the object which is dispatched with the `run`
 // call from the `checkit.run` method.
-function Runner(checkit) {
+function Runner(checkit, target, context) {
   this.errors         = {};
   this.checkit        = checkit;
   this.conditional    = checkit.conditional;
+  this.target         = _.clone(target || {})
+  this.context        = _.clone(context || {})
+  this.validator      = new Validator(this.target, checkit.language)
 }
 
 // Runs the validations on a specified "target".
 Runner.prototype.run = function(target, context) {
-  var runner = this;
-  this.target  = target  = _.clone(target || {})
-  this.context = context = _.clone(context || {})
+  var runner  = this;
+  var target  = this.target
+  var context = this.context
 
   var validationHash = _.clone(this.checkit.validations);
   var errors         = {}
@@ -180,7 +182,6 @@ function getVal(target, key){
   var value = _.clone(target), keys;
   if(value[key]) return value[key];
   if((keys = key.split('.')).length === 0) return undefined;
-
   while(keys.length > 0){
     value = value[keys.shift()];
   }
@@ -197,7 +198,7 @@ function processItem(runner, currentValidation, key, context) {
   if (rule !== 'accepted' && rule !== 'exists' && rule !== 'required') {
     if (value === '' || value == null) return;
   }
-  var result = runRule(runner.checkit.validator, runner, rule, params)
+  var result = runRule(runner.validator, runner, rule, params)
   if (_.isBoolean(result) && result === false) {
     throw new ValidationError(runner.checkit.getMessage(currentValidation, key));
   }
@@ -254,11 +255,10 @@ function SyncRunner() {
 inherits(SyncRunner, Runner)
 
 // Runs the validations on a specified "target".
-SyncRunner.prototype.run = function(target, context) {
+SyncRunner.prototype.run = function() {
   var runner = this;
-  this.target  = target  = _.clone(target || {})
-  this.context = context = _.clone(context || {})
-
+  var target = this.target;
+  var context = this.context;
   var validationHash = _.clone(this.checkit.validations);
   var errors         = {}
 
@@ -288,9 +288,9 @@ SyncRunner.prototype.run = function(target, context) {
 }
 
 // Constructor for running the `Validations`.
-function Validator(runner) {
-  this._language = runner.language;
-  this._target   = runner.target || {};
+function Validator(target, language) {
+  this._target = target
+  this._language = language
 }
 
 _.extend(Validator.prototype, {

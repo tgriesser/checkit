@@ -501,6 +501,10 @@ The `Checkit.labelTransform` method takes a function that receives the field nam
 
 ## Change Log
 
+### 0.5.1
+
+- Minor bugfixes
+
 ### 0.5.0
 
 - Major internal refactoring, using when.js to shave bytes in the browser build.
