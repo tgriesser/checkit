@@ -7,6 +7,8 @@ return {
   email: 'tgriesser10@gmail.com',
   emailFail: 'tgriesser(at)gmail(dot)com',
 
+  matchesEmail: 'tgriesser10@gmail.com',
+
   accepted1: 'true',
   accepted2: '1',
   accepted3: 1,

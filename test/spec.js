@@ -416,6 +416,10 @@ describe('Checkit', function() {
       return checkit.run({email: 'joe@gmail.com', first_name: 'joe'})
     });
 
+    it('matches', function() {
+      return Checkit({matchesEmail: ['matchesField:email']}).validate(testBlock)
+    })
+
   });
 
   describe('nested items', function(){

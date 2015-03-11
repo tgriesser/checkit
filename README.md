@@ -506,6 +506,10 @@ The `Checkit.labelTransform` method takes a function that receives the field nam
 - No longer subclass the native Error object
 - ...WIP...
 
+### 0.5.1
+
+- Minor bugfixes
+
 ### 0.5.0
 
 - Major internal refactoring, using when.js to shave bytes in the browser build.
