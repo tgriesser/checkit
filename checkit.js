@@ -22,7 +22,7 @@ function Checkit(validations, options) {
   this.validator      = new Validator(this)
 }
 
-Checkit.VERSION = '0.5.0';
+Checkit.VERSION = '0.6.0';
 
 // Possibly run a validations on this object, depending on the
 // result of the `conditional` handler.
