@@ -12,15 +12,19 @@
 
   <script src="assets/mocha.js"></script>
   <script src="../node_modules/node-uuid/uuid.js"></script>
-  <script src="../checkit.js"></script>
+  <script src="../dist/checkit.js"></script>
   <script>
   Checkit.Promise = Q;
   </script>
 
   <script>mocha.setup('bdd')</script>
-  <script src="block.js"></script>
-  <script src="spec.js"></script>
+  <script src = "block.js"></script>
+  <!-- <script src = "spec.js"></script> -->
+  <script src = "sync.js"></script>
   <script>
+    window.assert = function(a) {
+      if (!a) throw new Error('Invalid assertion ' + a)
+    }
     window.equal = function(k, v) {
       if (k !== v) throw new Error('Not equal ' + k + ' and ' + v);
     };

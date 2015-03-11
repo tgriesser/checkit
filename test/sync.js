@@ -1,14 +1,14 @@
-describe('Checkit', function() {
+describe('Checkit - sync', function() {
 
-  describe('.check', function() {
+  describe('.checkSync', function() {
 
     it('should accept a field, value, and rules', function() {
-
-      return Checkit.check('email', 'tim@tgriesser', ['required', 'email']).catch(function(err) {
+      try {
+        Checkit.checkSync('email', 'tim@tgriesser', ['required', 'email'])
+      } catch (err) {
         equal(err instanceof Checkit.FieldError, true);
         equal(err.message, 'The email must be a valid email address');
-      });
-
+      }
     });
 
   });
@@ -23,7 +23,7 @@ describe('Checkit', function() {
           accepted2: 'accepted',
           accepted3: 'accepted',
           accepted4: 'accepted'
-        }).run(testBlock);
+        }).runSync(testBlock);
       });
 
     });
@@ -33,22 +33,24 @@ describe('Checkit', function() {
       it('should pass for numbers', function() {
         return Checkit({
           integer: ['between:10:15']
-        }).run(testBlock)
+        }).runSync(testBlock)
       });
 
       it('should pass for numbers in strings', function() {
         return Checkit({
           stringInteger: ['between:10:15']
-        }).run(testBlock)
+        }).runSync(testBlock)
       });
 
       it('should fail if the value is outside the range', function() {
-        return Checkit({
-          integer: ['between:0:10']
-        }).run(testBlock).catch(function() {
-          return true;
-        }).then(function(val) { equal(val, true) })
-      });
+        try {
+          return Checkit({
+            integer: ['between:0:10']
+          }).runSync(testBlock)          
+        } catch (e) {
+          assert(e instanceof Checkit.Error)
+        }
+      })
 
     });
 
@@ -56,37 +58,33 @@ describe('Checkit', function() {
       it('should pass for numbers', function() {
         return Checkit({
           integer: ['between:10:15']
-        }).run(testBlock)
+        }).runSync(testBlock)
       });
 
       it('should pass for numbers in strings', function() {
-        return Checkit({
+        deepEqual(Checkit({
           stringInteger: ['between:10:15']
-        }).run(testBlock)
+        }).runSync(testBlock), {stringInteger: testBlock.stringInteger})
       });
 
-      it('should fail if the value is outside the range', function() {
-        return Checkit({
-          integer: ['between:0:10']
-        }).run(testBlock).catch(function() {
-          return true;
-        }).then(function(val) { equal(val, true) })
+      it('should fail if the value is outside the range', function(ok) {
+        try {
+          Checkit({integer: ['between:0:10']}).runSync(testBlock)  
+        } catch (e) {
+          ok()
+        }
       });
 
-      it('should not treat the min values as inclusive', function() {
+      it('should treat the min values as inclusive', function() {
         return Checkit({
-          integer: ['between:12:13']
-        }).run(testBlock).catch(function() {
-          return true;
-        }).then(function(val) { equal(val, true) })
+          integer: ['range:12:13']
+        }).runSync(testBlock);
       });
 
-      it('should not treat the max values as inclusive', function() {
+      it('should treat the max values as inclusive', function() {
         return Checkit({
-          integer: ['between:0:12']
-        }).run(testBlock).catch(function() {
-          return true;
-        }).then(function(val) { equal(val, true) })
+          integer: ['range:0:12']
+        }).runSync(testBlock)
       });
     });
 
@@ -134,12 +132,14 @@ describe('Checkit', function() {
         }).run(testBlock)
       });
 
-      it('should fail for NaN', function() {
-        return Checkit({
-          isNaN: 'numeric'
-        }).run(testBlock).catch(function() {
-          return true;
-        }).then(function(val) { equal(val, true) })
+      it('should fail for NaN', function(ok) {
+        try {
+          Checkit({
+            isNaN: 'numeric'
+          }).runSync(testBlock)
+        } catch(e) {
+          ok()
+        }
       });
 
     });
@@ -150,15 +150,15 @@ describe('Checkit', function() {
         return Checkit({
           integer: ['isNumber'],
           negativeInteger: ['isNumber']
-        }).run(testBlock)
+        }).runSync(testBlock)
       });
 
-      it('should fail for numbers in strings', function() {
-        return Checkit({
-          stringInteger: ['isNumber']
-        }).run(testBlock).catch(function() {
-          return true;
-        }).then(function(val) { equal(val, true) })
+      it('should fail for numbers in strings', function(ok) {
+        try {
+          Checkit({
+            stringInteger: ['isNumber']
+          }).runSync(testBlock)
+        } catch(e) { ok() }
       });
 
       it('should pass for NaN', function() {
@@ -429,9 +429,7 @@ describe('Checkit', function() {
 
   describe('nested items', function(){
     it('validates for nested items', function(){
-      return Checkit({
-        "info.email": ['required', 'email']
-      }).run({info: {email: "joe@gmail.com"}})
+      return Checkit({"info.email": ['required', 'email']}).runSync({info: {email: "joe@gmail.com"}})
     });
   });
 

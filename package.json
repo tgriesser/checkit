@@ -1,18 +1,22 @@
 {
   "name": "checkit",
-  "version": "0.2.0-pre",
+  "version": "0.5.0",
   "description": "Simple validations for node and the browser.",
   "main": "checkit.js",
   "scripts": {
-    "test": "mocha -R spec test/index.js"
+    "test": "mocha -R spec test/index.js",
+    "build": "npm run build:main && npm run build:dist",
+    "build:main": "webpack --output-library Checkit --output-library-target umd checkit.js dist/checkit.js",
+    "build:dist":  "webpack --output-library Checkit --output-library-target umd --optimize-minimize checkit.js dist/checkit.min.js"
   },
   "directories": {
     "test": "test"
   },
   "dependencies": {
-    "bluebird": ">=0.11.0",
     "create-error": ">=0.2.1",
-    "lodash": ">=2.4.0"
+    "inherits": "^2.0.1",
+    "lodash": ">=2.0",
+    "when": "^3.7.2"
   },
   "devDependencies": {
     "mocha": "~1.15.0",

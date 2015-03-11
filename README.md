@@ -1,6 +1,6 @@
 # Checkit.js
 
-A DOM-independent validation library for **Node.js** and the **browser**.
+A DOM-independent validation library for **Node.js**, **io.js** and the **browser**.
 
 It allows you to seamlessly validate full javascript objects, defining custom messages, labels, and validations, with full support for asynchronous validations with promises. It supports [conditional validations](#conditional-validations), and has powerful, consistent [error structuring](#checkit-errors) and [utility methods](#error-utility-methods) for manipulating your errors' output any way you can imagine.
 
@@ -18,10 +18,6 @@ mainRules
     }).join(''));
   });
 ```
-
-<!--
-The [annotated source](/checkit/docs/checkit.html) code is available for browsing.
--->
 
 ## Installation
 
