@@ -503,8 +503,8 @@ The `Checkit.labelTransform` method takes a function that receives the field nam
 
 ### 0.6.0
 
-- No longer subclass the native Error object
-- ...WIP...
+- No longer subclasses the native Error object, stack traces were useless anyway
+- Separate codepath for server (bluebird) and client (when.js)
 
 ### 0.5.1
 

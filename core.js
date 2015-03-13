@@ -2,9 +2,9 @@
 //     http://tgriesser.com/checkit
 //     (c) 2013-2015 Tim Griesser
 //     Checkit may be freely distributed under the MIT license.
-var Promise     = require('when').Promise
-var _           = require('lodash')
-var inherits    = require('inherits')
+module.exports = function(_, Promise) {
+
+var inherits = require('inherits')
 
 // The top level `Checkit` constructor, accepting the
 // `validations` to be run and any additional `options`.
@@ -84,7 +84,6 @@ Checkit.check = function(key, value, rules, sync) {
   var input = {}, validations = {};
   input[key] = value;
   validations[key] = rules;
-  
   if (sync) {
     return checkSync(validations, input, key)
   } else {
@@ -524,7 +523,7 @@ function capitalize(word) {
 // the format and allow for maximum flexibility when passing to the
 // validation blocks.
 function prepValidations(validations) {
-  validations = _.clone(validations);
+  validations = _.cloneDeep(validations);
   for (var key in validations) {
     var validation = validations[key];
     if (!_.isArray(validation)) validations[key] = validation = [validation];
@@ -560,4 +559,6 @@ Checkit.Runner          = Runner
 Checkit.SyncRunner      = SyncRunner
 Checkit.Validator       = Validator
 
-module.exports = Checkit
+return Checkit;
+
+}

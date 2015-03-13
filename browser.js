@@ -1,0 +1,1 @@
+module.exports = require('./core')(require('lodash'), require('when').Promise)

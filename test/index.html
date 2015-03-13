@@ -6,16 +6,10 @@
 </head>
 <body>
   <div id="mocha"></div>
-  <script src="assets/underscore.js"></script>
-  <script src="assets/create-error.js"></script>
-  <script src="assets/q.js"></script>
-
   <script src="assets/mocha.js"></script>
+  <script src="../node_modules/lodash/index.js"></script>
   <script src="../node_modules/node-uuid/uuid.js"></script>
   <script src="../dist/checkit.js"></script>
-  <script>
-  Checkit.Promise = Q;
-  </script>
 
   <script>mocha.setup('bdd')</script>
   <script src = "block.js"></script>

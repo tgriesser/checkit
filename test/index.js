@@ -1,6 +1,6 @@
 global.Promise   = require('bluebird');
 global._         = require('lodash');
-global.Checkit   = require('../checkit');
+global.Checkit   = require('../server');
 
 global.assert    = require('assert');
 global.equal     = require('assert').equal;
