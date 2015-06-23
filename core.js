@@ -424,6 +424,7 @@ var Regex = Checkit.Regex = {
 function ValidationError(message) {
   this.message = message
 }
+ValidationError.prototype = new Error;
 ValidationError.prototype.toString = function() {
   return this.message
 }
@@ -436,6 +437,8 @@ function FieldError(message) {
   this.message = message
   this.errors  = []
 }
+
+FieldError.prototype = new Error;
 
 _.extend(FieldError.prototype, {
 
@@ -465,6 +468,8 @@ function CheckitError(message) {
   this.message = message;
   this.errors  = {}
 }
+
+CheckitError.prototype = new Error;
 
 _.extend(CheckitError.prototype, {
 
