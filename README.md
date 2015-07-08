@@ -401,10 +401,10 @@ You may also use the `context` parameter passed to `run` when using a function o
 }
 ```
 
-Second, you may add a custom validator to the `Checkit.Validators` object, returning a boolean value or a promise.
+Second, you may add a custom validator to the `Checkit.Validator` object's prototype, returning a boolean value or a promise.
 
 ```js
-Checkit.Validators.unused = function(val, table, column) {
+Checkit.Validator.prototype.unused = function(val, table, column) {
   return knex(table).where(column, '=', val).then(function(resp) {
     if (resp.length > 0) {
       throw new Error('The ' + table + '.' + column + ' field is already in use.');
