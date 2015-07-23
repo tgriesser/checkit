@@ -40,10 +40,10 @@ Checkit.prototype.validate = function(target, context) {
 
 // Synchronously runs a validation block, returning an object of all fields
 // validated, or throwing a `Checkit.Error` object.
-Checkit.prototype.runSync = 
+Checkit.prototype.runSync =
 Checkit.prototype.validateSync = function(target, context) {
   try  {
-    return [null, new SyncRunner(this, target, context).run()]  
+    return [null, new SyncRunner(this, target, context).run()]
   } catch (err) {
     return [err, null]
   }
@@ -57,7 +57,7 @@ Checkit.prototype.getMessage = function(item, key) {
   for (var i = 0, l = item.params.length; i < l; i++) {
     message = message.replace(varRegex(i+1), item.params[i]);
   }
-  return message;  
+  return message;
 }
 
 // Used to transform the label before using it, can be
@@ -70,7 +70,8 @@ Checkit.labelTransform = function(label) {
 // add anything to this object.
 Checkit.i18n = {
   en: require('./lang/en'),
-  es: require('./lang/es')
+  es: require('./lang/es'),
+  ru: require('./lang/ru')
 }
 
 // The default language for all validations, defaults to "en" which
@@ -131,7 +132,7 @@ Runner.prototype.run = function(target, context) {
     return Promise.resolve(checkConditional(runner, conditional))
       .then(function(result) {
         if (result !== true) return;
-        addVerifiedConditional(validationHash, conditional) 
+        addVerifiedConditional(validationHash, conditional)
       })
       .catch(function() {})
   })
@@ -228,23 +229,23 @@ function runRule(validator, runner, rule, params) {
   var result;
   if (_.isFunction(rule)) {
     result = rule.apply(runner, params);
-  } 
+  }
   else if (typeof validator[rule] === 'function') {
     result = validator[rule].apply(validator, params);
-  } 
+  }
   else if (typeof _[rule] === 'function') {
     result = _[rule].apply(_, params);
-  } 
+  }
   else if (typeof _['is' + capitalize(rule)] === 'function') {
     result = _['is' + capitalize(rule)].apply(_, params);
-  } 
+  }
   else if (Checkit.Regex[rule]) {
     result = Checkit.Regex[rule].test(params[0]);
-  } 
+  }
   else {
     throw new ValidationError('No validation defined for ' + rule);
   }
-  return result;  
+  return result;
 }
 
 function SyncRunner() {
@@ -263,7 +264,7 @@ SyncRunner.prototype.run = function() {
   _.each(this.conditional, function(conditional) {
     var result = checkConditional(runner, conditional)
     if (result !== true) return;
-    addVerifiedConditional(validationHash, conditional) 
+    addVerifiedConditional(validationHash, conditional)
   })
 
   _.each(validationHash, function(validations, key) {
@@ -275,13 +276,13 @@ SyncRunner.prototype.run = function() {
       }
     })
   })
-  
+
   if (!_.isEmpty(errors)) {
     var err = new CheckitError(_.keys(errors).length + ' invalid values');
         err.errors = errors;
     throw err;
   }
-  
+
   return _.pick(target, _.keys(validationHash));
 }
 

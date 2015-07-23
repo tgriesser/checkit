@@ -2,7 +2,7 @@
 
 A DOM-independent validation library for **Node.js**, **io.js** and the **browser**.
 
-It supports both sync 
+It supports both sync
 
 It allows you to seamlessly validate full javascript objects, defining custom messages, labels, and validations, with full support for asynchronous validations with promises. It supports [conditional validations](#conditional-validations), and has powerful, consistent [error structuring](#checkit-errors) and [utility methods](#error-utility-methods) for manipulating your errors' output any way you can imagine.
 
@@ -41,7 +41,7 @@ The main `Checkit` constructor may be called with or without the `new` keyword, 
 
 ##### language
 
-Used to specify the default language key for using a particular language file, currently en and es are supported.
+Used to specify the default language key for using a particular language file, currently en, es and ru are supported.
 
 ##### labels
 
@@ -116,7 +116,7 @@ Checkit.check('email', email, ['required', 'validEmail'])
 var [err, resp] = Checkit.checkSync('email', email, ['required', 'validEmail'])  
 
 if (err) {
-  
+
 } else {
   // ...
 }
@@ -388,7 +388,7 @@ You may also use the `context` parameter passed to `run` when using a function o
       if (context && context.transacting){
         query.transacting(context.transacting);
       }
-      
+
       return query.where('email', '=', val)
         .andWhere('id', '<>', this.target.id)
         .then(function(resp){
