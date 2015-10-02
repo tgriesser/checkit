@@ -36,7 +36,7 @@ module.exports = {
     'NaN': 'Le champ {{label}} doit être "NaN"',
     finite: 'Le champ {{label}} doit être un nombre fini',
     'function': 'Le champ {{label}} doit être une fonction',
-    'arguments': 'Le champ {{label}} doit être un objet "argument" javascript,
+    'arguments': 'Le champ {{label}} doit être un objet "argument" javascript',
     regExp: 'Le champ {{label}} doit être un objet d\'expression régulière javascript',
 
     // Regex specific messages.
