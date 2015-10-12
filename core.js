@@ -71,7 +71,8 @@ Checkit.labelTransform = function(label) {
 Checkit.i18n = {
   en: require('./lang/en'),
   es: require('./lang/es'),
-  ru: require('./lang/ru')
+  ru: require('./lang/ru'),
+  fr: require('./lang/fr')
 }
 
 // The default language for all validations, defaults to "en" which

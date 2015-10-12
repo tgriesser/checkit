@@ -41,7 +41,7 @@ The main `Checkit` constructor may be called with or without the `new` keyword, 
 
 ##### language
 
-Used to specify the default language key for using a particular language file, currently en, es and ru are supported.
+Used to specify the default language key for using a particular language file, currently en, es, ru and fr are supported.
 
 ##### labels
 
