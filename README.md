@@ -405,7 +405,7 @@ Second, you may add a custom validator to the `Checkit.Validator` object's proto
 
 ```js
 Checkit.Validator.prototype.unused = function(val, table, column) {
-  return knex(table).where(column, '=', val).then(function(resp) {
+  return knex(table).where(column, '=', val).andWhere('id', '<>', this._target.id).then(function(resp) {
     if (resp.length > 0) {
       throw new Error('The ' + table + '.' + column + ' field is already in use.');
     }
