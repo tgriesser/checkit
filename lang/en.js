@@ -46,6 +46,7 @@ module.exports = {
     alphaUnderscore: 'The {{label}} must only contain alpha-numeric characters, underscores, and dashes',
     natural: 'The {{label}} must be a positive number',
     naturalNonZero: 'The {{label}} must be a number greater than zero',
+    integer: 'The {{label}} must be a valid integer',
     ipv4: 'The {{label}} must be a valid IPv4 string',
     ipv6: 'The {{label}} must be a valid IPv6 address',
     base64: 'The {{label}} must be a base64 string',
