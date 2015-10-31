@@ -46,6 +46,7 @@ module.exports = {
     alphaUnderscore: 'Le champ {{label}} ne doit contenir que des caractères alpha-numériques, des underscores, ou des tirets',
     natural: 'Le champ {{label}} doit être un nombre positif',
     naturalNonZero: 'Le champ {{label}} doit être un nombre supérieur à zéro',
+    integer: 'Le champ {{label}} doit être un entier',
     ipv4: 'Le champ {{label}} doit être une chaîne IPv4 valide',
     ipv6: 'Le champ {{label}} doit être une adresse IPv6 valide',
     base64: 'Le champ {{label}} doit être une chaîne en base64',
