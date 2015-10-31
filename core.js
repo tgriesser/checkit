@@ -54,8 +54,10 @@ Checkit.prototype.getMessage = function(item, key) {
   var label    = item.label   || this.labels[key] || language.labels[key] || this.labelTransform(key);
   var message  = item.message || this.messages[item.rule] || language.messages[item.rule] || language.messages.fallback;
   message = message.replace(labelRegex, label);
-  for (var i = 0, l = item.params.length; i < l; i++) {
-    message = message.replace(varRegex(i+1), item.params[i]);
+  if (item.params) {
+    for (var i = 0, l = item.params.length; i < l; i++) {
+      message = message.replace(varRegex(i+1), item.params[i]);
+    }
   }
   return message;
 }
