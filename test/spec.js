@@ -345,7 +345,7 @@ describe('Checkit', function() {
       return Checkit(rulesTest).run({valueTest: value})
     })
     
-    it('should fail when the validation rule throws an error', function(){
+    it('should fail when the validation rule throws an error', function(done){
       var rulesTest = {
         failedRuleTest: {
           rule: function(val){
@@ -355,9 +355,23 @@ describe('Checkit', function() {
       };
       return Checkit(rulesTest).run({failedRuleTest: "value"}).then(null, function(err){
         equal(err.get('failedRuleTest').message, 'thrown from rule function');
-      });
+      }).then(done, done);
     })
     
+    it('allow the use of custom messages on failed validation', function(done){
+      var rulesTest = {
+        failedRuleTest: {
+          rule: function(val){
+            throw new Error('thrown from rule function');
+          },
+          message: 'This is a custom message!'
+        }
+      };
+      return Checkit(rulesTest).run({failedRuleTest: "value"}).then(null, function(err){
+        equal(err.get('failedRuleTest').message, 'This is a custom message!');
+      }).then(done, done);
+    })
+
     it('should pass the supplied parameter to the validation rule', function(){
       var parameter = 'parameter';
       var rulesTest = {

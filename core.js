@@ -217,6 +217,7 @@ function processItemAsync(runner, currentValidation, key, context) {
 function addError(errors, key, validation) {
   return function(err) {
     var fieldError = errors[key];
+    err.message = validation.message || err.message;
     if (!fieldError) {
       fieldError = errors[key] = new FieldError(err.message)
       fieldError.key = key
