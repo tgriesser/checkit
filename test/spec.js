@@ -360,17 +360,33 @@ describe('Checkit', function() {
     
     it('allow the use of custom messages on failed validation', function(done){
       var rulesTest = {
-        failedRuleTest: {
+        manyFailedRulesTest: [{
           rule: function(val){
             throw new Error('thrown from rule function');
           },
           message: 'This is a custom message!'
+        }, {
+          rule: function(val){
+            throw new Error('thrown from rule function');
+          },
+          message: 'This is another custom message!'
+        }],
+        singleFailedRuleTest: {
+          rule: function(val){
+            throw new Error('thrown from rule function');
+          },
+          message: 'This is a third custom message!'
         }
       };
-      return Checkit(rulesTest).run({failedRuleTest: "value"}).then(null, function(err){
-        equal(err.get('failedRuleTest').message, 'This is a custom message!');
+      return Checkit(rulesTest).run({manyFailedRulesTest: 'value', singleFailedRuleTest: 'value'}).then(null, function(err){
+        err.errors.manyFailedRulesTest.each(function(errorItem, index) {
+          equal(errorItem.message, rulesTest.manyFailedRulesTest[index].message);
+        });
+        equal(err.get('singleFailedRuleTest').message, 'This is a third custom message!');
       }).then(done, done);
     })
+
+
 
     it('should pass the supplied parameter to the validation rule', function(){
       var parameter = 'parameter';
