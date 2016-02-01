@@ -555,7 +555,12 @@ function assembleValidation(validation) {
         validation.params = _.rest(splitRule);
       } catch(e) {
         // We are likely using a version of lodash >= 4, where _.rest has been renamed to _.tail
-        validation.params = _.tail(splitRule);
+        if(_.tail) {
+          validation.params = _.tail(splitRule);
+        } else {
+          throw e;
+        }
+
       }
 
     }
