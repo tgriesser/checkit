@@ -449,7 +449,7 @@ _.extend(FieldError.prototype, {
   toString: function(flat) {
     var errors = flat ? [this.errors[0]] : this.errors;
     return this.key + ': ' +
-      _.pluck(errors, 'message').join(', ');
+      _.map(errors, 'message').join(', ');
   },
 
   // Returns the current error in json format, by calling `toJSON`
@@ -471,7 +471,7 @@ function CheckitError(message) {
   this.errors  = {}
 }
 
-CheckitError.prototype = new Error;
+CheckitError.prototype = new Error();
 
 _.extend(CheckitError.prototype, {
 
