@@ -551,7 +551,7 @@ function assembleValidation(validation) {
     var splitRule = validation.rule.split(':');
     validation.rule = splitRule[0];
     if (_.isEmpty(validation.params)) {
-      validation.params = _.rest(splitRule);
+      validation.params = _.tail(splitRule);
     }
   } else if (!_.isFunction(validation.rule)) {
     throw new TypeError('Invalid validation');
