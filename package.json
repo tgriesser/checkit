@@ -21,7 +21,8 @@
   },
   "devDependencies": {
     "mocha": "~2.4.5",
-    "node-uuid": "~1.4.1"
+    "node-uuid": "~1.4.1",
+    "webpack": "1.12.13"
   },
   "repository": {
     "type": "git",

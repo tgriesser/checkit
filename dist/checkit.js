@@ -613,7 +613,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    var splitRule = validation.rule.split(':');
 	    validation.rule = splitRule[0];
 	    if (_.isEmpty(validation.params)) {
-	      validation.params = _.rest(splitRule);
+	      validation.params = _.tail(splitRule);
 	    }
 	  } else if (!_.isFunction(validation.rule)) {
 	    throw new TypeError('Invalid validation');
@@ -714,6 +714,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    alphaUnderscore: 'The {{label}} must only contain alpha-numeric characters, underscores, and dashes',
 	    natural: 'The {{label}} must be a positive number',
 	    naturalNonZero: 'The {{label}} must be a number greater than zero',
+	    integer: 'The {{label}} must be a valid integer',
 	    ipv4: 'The {{label}} must be a valid IPv4 string',
 	    ipv6: 'The {{label}} must be a valid IPv6 address',
 	    base64: 'The {{label}} must be a base64 string',
@@ -892,6 +893,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    alphaUnderscore: 'Le champ {{label}} ne doit contenir que des caractères alpha-numériques, des underscores, ou des tirets',
 	    natural: 'Le champ {{label}} doit être un nombre positif',
 	    naturalNonZero: 'Le champ {{label}} doit être un nombre supérieur à zéro',
+	    integer: 'Le champ {{label}} doit être un entier',
 	    ipv4: 'Le champ {{label}} doit être une chaîne IPv4 valide',
 	    ipv6: 'Le champ {{label}} doit être une adresse IPv6 valide',
 	    base64: 'Le champ {{label}} doit être une chaîne en base64',
@@ -13600,7 +13602,7 @@ return /******/ (function(modules) { // webpackBootstrap
 /* 11 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var require;var __WEBPACK_AMD_DEFINE_RESULT__;/* WEBPACK VAR INJECTION */(function(process) {/** @license MIT License (c) copyright 2010-2014 original author or authors */
+	var __WEBPACK_AMD_DEFINE_RESULT__;var require;/* WEBPACK VAR INJECTION */(function(process) {/** @license MIT License (c) copyright 2010-2014 original author or authors */
 	/** @author Brian Cavalier */
 	/** @author John Hann */
 
@@ -14702,7 +14704,7 @@ return /******/ (function(modules) { // webpackBootstrap
 		 * @returns {String} formatted string, suitable for output to developers
 		 */
 		function formatError(e) {
-			var s = typeof e === 'object' && e !== null && e.stack ? e.stack : formatObject(e);
+			var s = typeof e === 'object' && e !== null && (e.stack || e.message) ? e.stack || e.message : formatObject(e);
 			return e instanceof Error ? s : s + ' (WARNING: non-Error used)';
 		}
 
