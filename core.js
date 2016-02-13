@@ -482,7 +482,7 @@ _.extend(CheckitError.prototype, {
   // Convert the current error object toString, by stringifying the JSON representation
   // of the object.
   toString: function(flat) {
-    return 'Checkit Errors - ' + this.invoke('toString', flat).join('; ');
+    return 'Checkit Errors - ' + this.invokeMap('toString', flat).join('; ');
   },
 
   // Creates a JSON object of the validations, if `true` is passed - it will
