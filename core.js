@@ -237,11 +237,11 @@ function runRule(validator, runner, rule, params) {
   else if (typeof _[rule] === 'function') {
     result = _[rule].apply(_, params);
   }
-  else if (typeof _['is' + capitalize(rule)] === 'function') {
-    result = _['is' + capitalize(rule)].apply(_, params);
-  }
   else if (Checkit.Regex[rule]) {
     result = Checkit.Regex[rule].test(params[0]);
+  }
+  else if (typeof _['is' + capitalize(rule)] === 'function') {
+    result = _['is' + capitalize(rule)].apply(_, params);
   }
   else {
     throw new ValidationError('No validation defined for ' + rule);
@@ -498,7 +498,7 @@ _.extend(CheckitError.prototype, {
 
 // Similar to a Backbone.js `Model` or `Collection`, we'll mixin the underscore
 // methods that make sense to act on `CheckitError.errors` or `FieldError.errors`.
-var objMethods   = ['keys', 'values', 'pairs', 'invert', 'pick', 'omit'];
+var objMethods   = ['keys', 'values', 'toPairs', 'invert', 'pick', 'omit'];
 var arrMethods   = ['head', 'initial', 'tail', 'last'];
 var shareMethods = ['forEach', 'each', 'map', 'reduce', 'transform', 'reduceRight',
   'find', 'filter', 'reject', 'invokeMap', 'toArray', 'size', 'shuffle'];
