@@ -297,7 +297,7 @@ _.extend(Validator.prototype, {
 
   // Check if the value is an "accepted" value, useful for form submissions.
   accepted: function(val) {
-    return _.contains(this._language.accepted, val);
+    return _.includes(this._language.accepted, val);
   },
 
   // The item must be a number between the given `min` and `max` values.
@@ -499,9 +499,9 @@ _.extend(CheckitError.prototype, {
 // Similar to a Backbone.js `Model` or `Collection`, we'll mixin the underscore
 // methods that make sense to act on `CheckitError.errors` or `FieldError.errors`.
 var objMethods   = ['keys', 'values', 'pairs', 'invert', 'pick', 'omit'];
-var arrMethods   = ['first', 'initial', 'rest', 'last'];
+var arrMethods   = ['head', 'initial', 'tail', 'last'];
 var shareMethods = ['forEach', 'each', 'map', 'reduce', 'transform', 'reduceRight',
-  'find', 'filter', 'reject', 'invoke', 'toArray', 'size', 'shuffle'];
+  'find', 'filter', 'reject', 'invokeMap', 'toArray', 'size', 'shuffle'];
 
 _.each(shareMethods.concat(objMethods), function(method) {
   CheckitError.prototype[method] = function() {
