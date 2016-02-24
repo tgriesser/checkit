@@ -21,6 +21,7 @@ module.exports = {
     between: 'Le champ {{label}} doit être un nombre compris entre {{var_1}} et {{var_2}}',
     range: 'Le champ {{label}} doit être un nombre supérieur ou égal à {{var_1}} ou inférieur ou égal à {{var_2}}',
     contains: 'Le champ {{label}} doit contenir {{var_1}}',
+    string: 'Le champ {{label}} doit être de type "string"',
     numeric: 'Le champ {{label}} doit être une valeur numérique',
     matchesField: 'Le champ {{label}} doit doit correspondre exactement à {{var_1}}',
     different: 'Le champ {{label}} doit être différent de {{var_1}}',

@@ -303,6 +303,10 @@ if (err) {
       <td>The value must be present in the input data.</td>
     </tr>
     <tr>
+      <td>string</td>
+      <td>The value must be a string type.</td>
+    </tr>
+    <tr>
       <td>url</td>
       <td>The value must be formatted as an URL.</td>
     </tr>

@@ -15,6 +15,7 @@ module.exports = {
     lessThanEqualTo: '{{label}} debe de ser un número menor o igual a {{var_1}}',
     greaterThan: '{{label}} debe de ser un número mayor que {{var_1}}',
     greaterThanEqualTo: '{{label}} debe de ser un número mayor o igual a {{var_1}}',
+    string: '{{label}} debe de ser de tipo "string"',
     numeric: '{{label}} debe de ser un valor numérico',
     matchesField: '{{label}} debe de ser exactamente igual a {{var_1}}',
     different: '{{label}} debe de ser diferente a {{var_1}}',
