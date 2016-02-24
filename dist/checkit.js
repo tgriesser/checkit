@@ -174,11 +174,14 @@ return /******/ (function(modules) { // webpackBootstrap
 	// The validator is the object which is dispatched with the `run`
 	// call from the `checkit.run` method.
 	function Runner(checkit, target, context) {
+	  if (!target || typeof target !== 'object') {
+	    throw new TypeError('Argument `target` must be an object.');
+	  }
 	  this.errors         = {};
 	  this.checkit        = checkit;
 	  this.conditional    = checkit.conditional;
-	  this.target         = _.clone(target || {})
-	  this.context        = _.clone(context || {})
+	  this.target         = _.clone(target);
+	  this.context        = context;
 	  this.validator      = new Validator(this.target, checkit.language)
 	}
 
@@ -714,6 +717,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    alphaUnderscore: 'The {{label}} must only contain alpha-numeric characters, underscores, and dashes',
 	    natural: 'The {{label}} must be a positive number',
 	    naturalNonZero: 'The {{label}} must be a number greater than zero',
+	    integer: 'The {{label}} must be a valid integer',
 	    ipv4: 'The {{label}} must be a valid IPv4 string',
 	    ipv6: 'The {{label}} must be a valid IPv6 address',
 	    base64: 'The {{label}} must be a base64 string',
@@ -892,6 +896,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    alphaUnderscore: 'Le champ {{label}} ne doit contenir que des caractères alpha-numériques, des underscores, ou des tirets',
 	    natural: 'Le champ {{label}} doit être un nombre positif',
 	    naturalNonZero: 'Le champ {{label}} doit être un nombre supérieur à zéro',
+	    integer: 'Le champ {{label}} doit être un entier',
 	    ipv4: 'Le champ {{label}} doit être une chaîne IPv4 valide',
 	    ipv6: 'Le champ {{label}} doit être une adresse IPv6 valide',
 	    base64: 'Le champ {{label}} doit être une chaîne en base64',
@@ -13600,7 +13605,7 @@ return /******/ (function(modules) { // webpackBootstrap
 /* 11 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var require;var __WEBPACK_AMD_DEFINE_RESULT__;/* WEBPACK VAR INJECTION */(function(process) {/** @license MIT License (c) copyright 2010-2014 original author or authors */
+	var __WEBPACK_AMD_DEFINE_RESULT__;var require;/* WEBPACK VAR INJECTION */(function(process) {/** @license MIT License (c) copyright 2010-2014 original author or authors */
 	/** @author Brian Cavalier */
 	/** @author John Hann */
 
@@ -14702,7 +14707,7 @@ return /******/ (function(modules) { // webpackBootstrap
 		 * @returns {String} formatted string, suitable for output to developers
 		 */
 		function formatError(e) {
-			var s = typeof e === 'object' && e !== null && e.stack ? e.stack : formatObject(e);
+			var s = typeof e === 'object' && e !== null && (e.stack || e.message) ? e.stack || e.message : formatObject(e);
 			return e instanceof Error ? s : s + ' (WARNING: non-Error used)';
 		}
 

@@ -112,11 +112,14 @@ function checkSync(validations, input, key) {
 // The validator is the object which is dispatched with the `run`
 // call from the `checkit.run` method.
 function Runner(checkit, target, context) {
+  if (!target || typeof target !== 'object') {
+    throw new TypeError('Argument `target` must be an object.');
+  }
   this.errors         = {};
   this.checkit        = checkit;
   this.conditional    = checkit.conditional;
-  this.target         = _.clone(target || {})
-  this.context        = _.clone(context || {})
+  this.target         = _.clone(target);
+  this.context        = context;
   this.validator      = new Validator(this.target, checkit.language)
 }
 
