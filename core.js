@@ -378,6 +378,11 @@ _.extend(Validator.prototype, {
     return checkNumber(val) || checkNumber(param) || parseFloat(val) <= parseFloat(param);
   },
 
+  // Check if the value is a string
+  string: function(val) {
+    return (typeof val === 'string');
+  },
+
   // Check if the value is numeric
   numeric: numeric
 

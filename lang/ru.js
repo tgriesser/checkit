@@ -21,6 +21,7 @@ module.exports = {
     between: '{{label}} должно быть числом между {{var_1}} и {{var_2}}',
     range: '{{label}} должно быть числом, не менее {{var_1}} и не более {{var_2}}',
     contains: '{{label}} должно содержать {{var_1}}',
+    string: '{{label}} должно быть "string"',
     numeric: '{{label}} должно быть числом',
     matchesField: '{{label}} должно точно совпадать с {{var_1}}',
     different: '{{label}} должно быть отлично {{var_1}}',

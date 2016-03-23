@@ -108,6 +108,14 @@ describe('Checkit', function() {
 
     });
 
+    describe('string', function() {
+      it('should pass for strings', function() {
+        return Checkit({
+          isString: 'string'
+        }).run(testBlock);
+      });
+    });
+
     describe('integer', function() {
       it('should pass for numbers and strings (positive and negative)', function() {
         return Checkit({
