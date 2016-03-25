@@ -556,7 +556,18 @@ function assembleValidation(validation) {
     var splitRule = validation.rule.split(':');
     validation.rule = splitRule[0];
     if (_.isEmpty(validation.params)) {
-      validation.params = _.rest(splitRule);
+      try {
+        validation.params = _.rest(splitRule);
+      } catch(e) {
+        // We are likely using a version of lodash >= 4, where _.rest has been renamed to _.tail
+        if(_.tail) {
+          validation.params = _.tail(splitRule);
+        } else {
+          throw e;
+        }
+
+      }
+
     }
   } else if (!_.isFunction(validation.rule)) {
     throw new TypeError('Invalid validation');
