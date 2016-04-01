@@ -16,7 +16,7 @@ mainRules
   })
   .caught(Checkit.Error, function(err) {
     $("#errors").html(err.map(function(val, key) {
-      return '<li>' key + ': ' + val.first().message + '</li>';
+      return '<li>' + key + ': ' + val.first().message + '</li>';
     }).join(''));
   });
 ```
