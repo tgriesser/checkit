@@ -340,7 +340,7 @@ describe('Checkit', function() {
   });
 
   describe('custom validation rules', function() {
-    
+
     it('should run the rule function on the supplied value', function() {
       var value = 'value';
       var rulesTest = {
@@ -352,7 +352,7 @@ describe('Checkit', function() {
       };
       return Checkit(rulesTest).run({valueTest: value})
     })
-    
+
     it('should fail when the validation rule throws an error', function(){
       var rulesTest = {
         failedRuleTest: {
@@ -365,7 +365,7 @@ describe('Checkit', function() {
         equal(err.get('failedRuleTest').message, 'thrown from rule function');
       });
     })
-    
+
     it('should pass the supplied parameter to the validation rule', function(){
       var parameter = 'parameter';
       var rulesTest = {
@@ -378,7 +378,7 @@ describe('Checkit', function() {
       };
       return Checkit(rulesTest).run({parameterTest: "value"})
     })
-    
+
     it('should pass the context property supplied to the run function to the rule function', function(){
       var runContext = 'the context';
       var rulesTest = {
@@ -390,7 +390,7 @@ describe('Checkit', function() {
       }
       return Checkit(rulesTest).run({contextTest: "value"}, runContext)
     })
-    
+
   });
 
   describe('conditional items', function() {

@@ -14,14 +14,15 @@
     "test": "test"
   },
   "dependencies": {
-    "bluebird": "^2.9.14",
+    "bluebird": "^3.3.1",
     "inherits": "^2.0.1",
-    "lodash": "^2.4.0 || ^3.0.0",
+    "lodash": "^4.0.0",
     "when": "^3.0.0"
   },
   "devDependencies": {
-    "mocha": "~1.15.0",
-    "node-uuid": "~1.4.1"
+    "mocha": "~2.4.5",
+    "node-uuid": "~1.4.1",
+    "webpack": "1.12.13"
   },
   "repository": {
     "type": "git",

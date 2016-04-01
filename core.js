@@ -237,11 +237,11 @@ function runRule(validator, runner, rule, params) {
   else if (typeof _[rule] === 'function') {
     result = _[rule].apply(_, params);
   }
-  else if (typeof _['is' + capitalize(rule)] === 'function') {
-    result = _['is' + capitalize(rule)].apply(_, params);
-  }
   else if (Checkit.Regex[rule]) {
     result = Checkit.Regex[rule].test(params[0]);
+  }
+  else if (typeof _['is' + capitalize(rule)] === 'function') {
+    result = _['is' + capitalize(rule)].apply(_, params);
   }
   else {
     throw new ValidationError('No validation defined for ' + rule);
@@ -297,7 +297,7 @@ _.extend(Validator.prototype, {
 
   // Check if the value is an "accepted" value, useful for form submissions.
   accepted: function(val) {
-    return _.contains(this._language.accepted, val);
+    return _.includes(this._language.accepted, val);
   },
 
   // The item must be a number between the given `min` and `max` values.
@@ -454,7 +454,7 @@ _.extend(FieldError.prototype, {
   toString: function(flat) {
     var errors = flat ? [this.errors[0]] : this.errors;
     return this.key + ': ' +
-      _.pluck(errors, 'message').join(', ');
+      _.map(errors, 'message').join(', ');
   },
 
   // Returns the current error in json format, by calling `toJSON`
@@ -476,7 +476,7 @@ function CheckitError(message) {
   this.errors  = {}
 }
 
-CheckitError.prototype = new Error;
+CheckitError.prototype = new Error();
 
 _.extend(CheckitError.prototype, {
 
@@ -487,7 +487,7 @@ _.extend(CheckitError.prototype, {
   // Convert the current error object toString, by stringifying the JSON representation
   // of the object.
   toString: function(flat) {
-    return 'Checkit Errors - ' + this.invoke('toString', flat).join('; ');
+    return 'Checkit Errors - ' + this.invokeMap('toString', flat).join('; ');
   },
 
   // Creates a JSON object of the validations, if `true` is passed - it will
@@ -503,10 +503,10 @@ _.extend(CheckitError.prototype, {
 
 // Similar to a Backbone.js `Model` or `Collection`, we'll mixin the underscore
 // methods that make sense to act on `CheckitError.errors` or `FieldError.errors`.
-var objMethods   = ['keys', 'values', 'pairs', 'invert', 'pick', 'omit'];
-var arrMethods   = ['first', 'initial', 'rest', 'last'];
+var objMethods   = ['keys', 'values', 'toPairs', 'invert', 'pick', 'omit'];
+var arrMethods   = ['head', 'initial', 'tail', 'last'];
 var shareMethods = ['forEach', 'each', 'map', 'reduce', 'transform', 'reduceRight',
-  'find', 'filter', 'reject', 'invoke', 'toArray', 'size', 'shuffle'];
+  'find', 'filter', 'reject', 'invokeMap', 'toArray', 'size', 'shuffle'];
 
 _.each(shareMethods.concat(objMethods), function(method) {
   CheckitError.prototype[method] = function() {
@@ -556,7 +556,7 @@ function assembleValidation(validation) {
     var splitRule = validation.rule.split(':');
     validation.rule = splitRule[0];
     if (_.isEmpty(validation.params)) {
-      validation.params = _.rest(splitRule);
+      validation.params = _.tail(splitRule);
     }
   } else if (!_.isFunction(validation.rule)) {
     throw new TypeError('Invalid validation');
