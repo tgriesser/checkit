@@ -48,7 +48,7 @@ class Checkit {
         result = tmp.value
         break;
       }
-      if (typeof tmp.value.then === 'function') {
+      if (tmp.value && typeof tmp.value.then === 'function') {
         console.error( //eslint-disable-line
           new Error('Trying to process an async validation synchronously')
         )
