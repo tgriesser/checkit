@@ -86,8 +86,8 @@ class Checkit {
 
 }
 
-function checkit() {
-  return new Checkit(...arguments)
+function checkit(validations, options) {
+  return new Checkit(validations, options)
 }
 
 // The default language for all validations, defaults to "en" which
@@ -625,7 +625,9 @@ checkit.validators = {
   maxLength,
   greaterThan,
   greaterThanEqualTo,
+  gte: greaterThanEqualTo,
   lessThan,
+  lte: lessThanEqualTo,
   lessThanEqualTo,
   string,
   numeric
