@@ -1,21 +1,46 @@
-describe('Checkit - sync', function() {
+/* eslint-env mocha */
+const _ = require('lodash')
+const expect = require('expect')
+const checkit = require('../src/checkit')
+const testBlock = require('./block')
 
-  describe('.checkSync', function() {
+function equal(a, b) {
+  return expect(a).toEqual(b)
+}
+function assert(val) {
+  return expect(val).toEqual(true)
+}
 
-    it('should accept a field, value, and rules', function() {
-      var arr = Checkit.checkSync('email', 'tim@tgriesser', ['required', 'email'])
-      equal((arr[0] instanceof Checkit.FieldError), true);
-      equal(arr[0].message, 'The email must be a valid email address');
+describe('checkit - sync', () => {
+
+  describe('.checkSync', () => {
+
+    it('should accept a field, value, and rules', () => {
+      const arr = checkit.checkSync('email', 'tim@tgriesser', ['required', 'email'])
+      equal((arr[0] instanceof checkit.FieldError), true);
+      equal(arr[0].message, 'email must be a valid email address');
     });
 
   });
 
-  describe('validators', function() {
+  describe('.singleSync', () => {
 
-    describe('accepted', function() {
+    it('should create a checkit instance which validates a single item', () => {
+      const c = checkit.singleSync('email', ['required', 'email'])
+      equal(c.requirements(), [
+        'email is required',
+        'email must be a valid email address'
+      ])
+    })
 
-      it('passes with on', function() {
-        return Checkit({
+  })
+
+  describe('validators', () => {
+
+    describe('accepted', () => {
+
+      it('passes with on', () => {
+        return checkit({
           accepted1: 'accepted',
           accepted2: 'accepted',
           accepted3: 'accepted',
@@ -25,81 +50,82 @@ describe('Checkit - sync', function() {
 
     });
 
-    describe('between', function() {
+    describe('between', () => {
 
-      it('should pass for numbers', function() {
-        return Checkit({
+      it('should pass for numbers', () => {
+        return checkit({
           integer: ['between:10:15']
         }).runSync(testBlock)
       });
 
-      it('should pass for numbers in strings', function() {
-        return Checkit({
+      it('should pass for numbers in strings', () => {
+        return checkit({
           stringInteger: ['between:10:15']
         }).runSync(testBlock)
       });
 
-      it('should fail if the value is outside the range', function() {
-        var arr = Checkit({
+      it('should fail if the value is outside the range', () => {
+        const arr = checkit({
           integer: ['between:0:10']
-        }).runSync(testBlock)          
-        assert(arr[0] instanceof Checkit.Error)
+        }).runSync(testBlock)
+        assert(arr[0] instanceof checkit.Error)
       })
 
     });
 
-    describe('range', function() {
-      it('should pass for numbers', function() {
-        return Checkit({
+    describe('range', () => {
+      it('should pass for numbers', () => {
+        return checkit({
           integer: ['between:10:15']
         }).runSync(testBlock)
       });
 
-      it('should pass for numbers in strings', function() {
-        deepEqual(Checkit({
+      it('should pass for numbers in strings', () => {
+        equal(checkit({
           stringInteger: ['between:10:15']
         }).runSync(testBlock)[1], {stringInteger: testBlock.stringInteger})
       });
 
-      it('should fail if the value is outside the range', function() {
-        var arr = Checkit({integer: ['between:0:10']}).runSync(testBlock)
-        assert(arr[0] instanceof Checkit.Error)
+      it('should fail if the value is outside the range', () => {
+        const arr = checkit({integer: ['between:0:10']}).runSync(testBlock)
+        assert(arr[0] instanceof checkit.Error)
       });
 
-      it('should treat the min values as inclusive', function() {
-        return Checkit({
+      it('should treat the min values as inclusive', () => {
+        return checkit({
           integer: ['range:12:13']
         }).runSync(testBlock);
       });
 
-      it('should treat the max values as inclusive', function() {
-        return Checkit({
+      it('should treat the max values as inclusive', () => {
+        return checkit({
           integer: ['range:0:12']
         }).runSync(testBlock)
       });
     });
 
-    describe('emails', function() {
+    describe('emails', () => {
 
-      it('passes with a valid email', function() {
-        return Checkit({email: ['email']}).run(testBlock)
+      it('passes with a valid email', () => {
+        const [e] = checkit({email: ['email']}).runSync(testBlock)
+        expect(e).toNotExist()
       });
 
-      it('does not run on an empty input', function() {
-        return Checkit({email: ['email']}).run(testBlock)
+      it('does not run on an empty input', () => {
+        const [e] = checkit({email: ['email']}).runSync(testBlock)
+        expect(e).toNotExist()
       });
 
-      it('fails with an invalid email', function() {
-        return Checkit({emailFail: ['email']}).run(testBlock).catch(function(err) {
-          equal(err.get('emailFail').toString(), 'emailFail: The emailFail must be a valid email address');
-        });
+      it('fails with an invalid email', () => {
+        const [e] = checkit({emailFail: ['email']}).runSync(testBlock)
+        equal(e.get('emailFail').toString(), 'emailFail: emailFail must be a valid email address')
       });
 
     });
 
-    describe('integer', function() {
-      it('should pass for numbers and strings (positive and negative)', function() {
-        return Checkit({
+    describe('integer', () => {
+      it('should pass for numbers and strings (positive and negative)', () => {
+        return checkit({
           integer: 'integer',
           negativeInteger: 'integer',
           stringInteger: 'integer',
@@ -108,163 +134,163 @@ describe('Checkit - sync', function() {
       });
     });
 
-    describe('numeric', function() {
-      it('should only pass for numbers for negative numbers and strings', function() {
-        return Checkit({
+    describe('numeric', () => {
+      it('should only pass for numbers for negative numbers and strings', () => {
+        return checkit({
           negativeInteger: 'numeric',
           negativeStringInteger: 'numeric'
         }).run(testBlock)
       });
 
-      it('should pass for positive numbers and strings', function() {
-        return Checkit({
+      it('should pass for positive numbers and strings', () => {
+        return checkit({
           integer: 'numeric',
           stringInteger: 'numeric'
         }).run(testBlock)
       });
 
-      it('should fail for NaN', function() {
-        var arr = Checkit({
+      it('should fail for NaN', () => {
+        const arr = checkit({
           isNaN: 'numeric'
         }).runSync(testBlock)
-        assert(arr[0] instanceof Checkit.Error)
+        assert(arr[0] instanceof checkit.Error)
       });
 
     });
 
-    describe('isNumber', function() {
+    describe('isNumber', () => {
 
-      it('should only pass for numbers', function() {
-        return Checkit({
+      it('should only pass for numbers', () => {
+        return checkit({
           integer: ['isNumber'],
           negativeInteger: ['isNumber']
         }).runSync(testBlock)
       });
 
-      it('should fail for numbers in strings', function() {
-        var arr = Checkit({
+      it('should fail for numbers in strings', () => {
+        const arr = checkit({
           stringInteger: ['isNumber']
         }).runSync(testBlock)
-        assert(arr[0] instanceof Checkit.Error)
+        assert(arr[0] instanceof checkit.Error)
       });
 
-      it('should pass for NaN', function() {
-        return Checkit({
+      it('should pass for NaN', () => {
+        return checkit({
           isNaN: ['isNumber']
         }).run(testBlock)
       });
 
     });
 
-    describe('isNaN', function() {
-      it('should only pass for NaN', function() {
-        return Checkit({
+    describe('isNaN', () => {
+      it('should only pass for NaN', () => {
+        return checkit({
           isNaN: ['isNaN']
         }).run(testBlock)
       });
     });
 
-    describe('boolean', function() {
+    describe('boolean', () => {
 
-      it('should pass for true and false', function() {
-        return Checkit({
+      it('should pass for true and false', () => {
+        return checkit({
           booleanTrue: ['boolean'],
           booleanFalse: ['boolean']
         }).run(testBlock)
       });
 
-      it('should not pass for "true" and "false"', function() {
-        return Checkit({
+      it('should not pass for "true" and "false"', () => {
+        return checkit({
           trueString: ['boolean'],
           falseString: ['boolean']
-        }).run(testBlock).catch(function() {
+        }).run(testBlock).catch(() => {
           return true;
         }).then(function(val) { equal(val, true) })
       });
 
-      it('should not pass for 0 and 1', function() {
-        return Checkit({
+      it('should not pass for 0 and 1', () => {
+        return checkit({
           zero: ['boolean'],
           one: ['boolean']
-        }).run(testBlock).catch(function() {
+        }).run(testBlock).catch(() => {
           return true;
         }).then(function(val) { equal(val, true) })
       });
 
     });
 
-    describe('ipv6', function() {
+    describe('ipv6', () => {
 
-      it('should pass for short ipv6', function() {
-        return Checkit({
+      it('should pass for short ipv6', () => {
+        return checkit({
           ipv6Short: ['ipv6']
         }).run(testBlock)
       });
 
-      it('should pass for long ipv6', function() {
-        return Checkit({
+      it('should pass for long ipv6', () => {
+        return checkit({
           ipv6Long: ['ipv6']
         }).run(testBlock)
       });
 
     });
 
-    describe('uuid', function() {
+    describe('uuid', () => {
 
-      it('should pass for uuid v1', function() {
-        return Checkit({
+      it('should pass for uuid v1', () => {
+        return checkit({
           uuidv1: ['uuid']
         }).run(testBlock)
       });
 
-      it('should pass for uuid v4', function() {
-        return Checkit({
+      it('should pass for uuid v4', () => {
+        return checkit({
           uuidv4: ['uuid']
         }).run(testBlock)
       });
 
     });
 
-    describe('url', function() {
+    describe('url', () => {
 
-      it('should validate a http url', function() {
-        return Checkit({
+      it('should validate a http url', () => {
+        return checkit({
           url1: ['url']
         }).run(testBlock)
       });
 
-      it('should validate a https url', function() {
-        return Checkit({
+      it('should validate a https url', () => {
+        return checkit({
           url2: ['url']
         }).run(testBlock)
       });
 
     });
 
-    describe('misc', function() {
+    describe('misc', () => {
 
-      it('should check ipv4 and addresses', function() {
-        return Checkit({ipv4: ['ipv4']}).run(testBlock)
+      it('should check ipv4 and addresses', () => {
+        return checkit({ipv4: ['ipv4']}).run(testBlock)
       });
 
-      it('should return true on a valid base64 string', function() {
-        return Checkit({base64: 'base64'}).run(testBlock)
-      });
-
-    });
-
-    describe('arguments', function() {
-
-      it('should pass with arguments', function() {
-        return Checkit({isArguments: "isArguments"}).run(testBlock)
+      it('should return true on a valid base64 string', () => {
+        return checkit({base64: 'base64'}).run(testBlock)
       });
 
     });
 
-    describe('isEmpty', function() {
+    describe('arguments', () => {
 
-      it('passes on empty string, array, object, null', function() {
-        return Checkit({
+      it('should pass with arguments', () => {
+        return checkit({isArguments: "isArguments"}).run(testBlock)
+      });
+
+    });
+
+    describe('isEmpty', () => {
+
+      it('passes on empty string, array, object, null', () => {
+        return checkit({
           isEmptyArray:  ['isEmpty'],
           isEmptyString: ['isEmpty'],
           isEmptyObject: ['isEmpty'],
@@ -276,9 +302,9 @@ describe('Checkit - sync', function() {
 
   });
 
-  describe('custom validation objects', function() {
+  describe('custom validation objects', () => {
 
-    var vals = {
+    const vals = {
       email: ['email', {
         rule: 'required',
         label: 'Email Address Field'
@@ -292,62 +318,62 @@ describe('Checkit - sync', function() {
       }]
     };
 
-    it('allows for custom labels and messages', function() {
-      return Checkit(vals).run({email: ''}).then(null, function(err) {
-        equal(err.get('email').message, 'The Email Address Field is required');
+    it('allows for custom labels and messages', () => {
+      return checkit(vals).run({email: ''}).then(null, function(err) {
+        equal(err.get('email').message, 'Email Address Field is required');
         equal(err.get('first_name').message, 'You must supply a first name value');
-        return Checkit(vals).run({first_name: 't'});
+        return checkit(vals).run({first_name: 't'});
       }).then(null, function(err) {
-        equal(err.get('first_name').message, 'The first name of this application must be at least 3 characters long');
+        equal(err.get('first_name').message, 'first name of this application must be at least 3 characters long');
       });
     });
 
-    it('allows for custom params', function() {
-      var containsTest = {
+    it('allows for custom params', () => {
+      const containsTest = {
         arr: {
           rule: 'contains',
           params: [10]
         }
       };
-      return Checkit(containsTest).run({arr: [0, 10, 20]}).then(function() {
-        return Checkit(_.extend(containsTest, {arr: 'contains:10'})).run({arr: [0, 10, 20]});
+      return checkit(containsTest).run({arr: [0, 10, 20]}).then(() => {
+        return checkit(_.extend(containsTest, {arr: 'contains:10'})).run({arr: [0, 10, 20]});
       }).then(null, function(err) {
-        equal(err.get('arr').message, 'The arr must contain 10');
+        equal(err.get('arr').message, 'arr must contain 10');
       });
     });
 
   });
 
-  describe('custom validation rules', function() {
-    
-    it('should run the rule function on the supplied value', function() {
-      var value = 'value';
-      var rulesTest = {
+  describe('custom validation rules', () => {
+
+    it('should run the rule function on the supplied value', () => {
+      const value = 'value';
+      const rulesTest = {
         valueTest: {
           rule: function(val) {
             equal(value, val);
           }
         }
       };
-      return Checkit(rulesTest).run({valueTest: value})
+      return checkit(rulesTest).run({valueTest: value})
     })
-    
-    it('should fail when the validation rule throws an error', function(){
-      var rulesTest = {
+
+    it('should fail when the validation rule throws an error', () => {
+      const rulesTest = {
         failedRuleTest: {
           rule: function(val){
             throw new Error('thrown from rule function');
           }
         }
       };
-      return Checkit(rulesTest).run({failedRuleTest: "value"}).then(null, function(err){
+      return checkit(rulesTest).run({failedRuleTest: "value"}).then(null, function(err){
         equal(err.get('failedRuleTest').message, 'thrown from rule function');
       });
     })
-    
-    it('should pass the supplied parameter to the validation rule', function(){
-      var parameter = 'parameter';
-      var rulesTest = {
+
+    it('should pass the supplied parameter to the validation rule', () => {
+      const parameter = 'parameter';
+      const rulesTest = {
         parameterTest: {
           rule: function(val, param){
             equal(parameter, param);
@@ -355,59 +381,47 @@ describe('Checkit - sync', function() {
           params: parameter
         }
       };
-      return Checkit(rulesTest).run({parameterTest: "value"})
+      return checkit(rulesTest).run({parameterTest: "value"})
     })
-    
-    it('should pass the context property supplied to the run function to the rule function', function(){
-      var runContext = 'the context';
-      var rulesTest = {
+
+    it('should pass the context property supplied to the run function to the rule function', () => {
+      const runContext = 'the context';
+      const rulesTest = {
         contextTest: {
           rule: function(val, params, context){
             equal(runContext, context);
           }
         }
       }
-      return Checkit(rulesTest).run({contextTest: "value"}, runContext)
+      return checkit(rulesTest).run({contextTest: "value"}, runContext)
     })
-    
+
   });
 
-  describe('conditional items', function() {
+  describe('conditional items', () => {
 
-    var checkit = Checkit({
+    const chain = checkit({
       email: ['email']
     });
-    checkit.maybe({email: ['contains:tim']}, function(item) {
+    chain.maybe({email: ['contains:tim']}, function(item) {
       return item.first_name === 'tim';
     });
 
-    it('validates for items that pass the conditional', function() {
-      return checkit.run({email: 'joe@gmail.com', first_name: 'tim'})
-        .then(function() {
-          return Promise.reject(new Error('Should not pass'));
-        }).catch(function(err) {
-          equal(err.toString(), 'Checkit Errors - email: The email must contain tim');
-        })
-        .then(function() {
-          return checkit.run({email: 'tim@gmail', first_name: 'tim'});
-        })
-        .then(function() {
-          return Promise.reject(new Error('Should not pass'));
-        })
-        .catch(function(err) {
-          equal(err.toString(), 'Checkit Errors - email: The email must be a valid email address');
-        })
+    it('validates for items that pass the conditional', () => {
+      const [e] = chain.runSync({email: 'joe@gmail.com', first_name: 'tim'})
+      expect(e).toBeAn(Error)
+      equal(`${e}`, 'email: email must contain tim')
     });
 
-    it('doesnt validate if the item doesnt pass the conditional', function() {
-      return checkit.run({email: 'joe@gmail.com', first_name: 'joe'})
+    it('doesnt validate if the item doesnt pass the conditional', () => {
+      return chain.run({email: 'joe@gmail.com', first_name: 'joe'})
     });
 
   });
 
-  describe('nested items', function(){
-    it('validates for nested items', function(){
-      return Checkit({"info.email": ['required', 'email']}).runSync({info: {email: "joe@gmail.com"}})
+  describe('nested items', () => {
+    it('validates for nested items', () => {
+      return checkit({"info.email": ['required', 'email']}).runSync({info: {email: "joe@gmail.com"}})
     });
   });
 

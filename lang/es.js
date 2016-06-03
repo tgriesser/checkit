@@ -22,7 +22,7 @@ module.exports = {
 
     // Underscore Predicates
     date: '{{label}} debe de ser una fecha',
-    equal: '{{label}} no es igual a {{var_1}}',
+    equal: '{{label}} debe de igual a {{var_1}}',
     'boolean': '{{label}} debe de ser de tipo "boolean"',
     empty: '{{label}} debe de estar vacío',
     array: '{{label}} debe de ser un arreglo',

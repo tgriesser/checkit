@@ -1,9 +1,6 @@
+const uuid = require('node-uuid')
 
-var uuid = typeof require !== "undefined" ? require('node-uuid') : global.uuid;
-
-global.testBlock = (function(){
-
-return {
+module.exports = {
   email: 'tgriesser10@gmail.com',
   emailFail: 'tgriesser(at)gmail(dot)com',
 
@@ -83,5 +80,3 @@ bmVyYXRpb24gb2Yga25vd2xlZGdlLCBleGNlZWRzIHRoZSBzaG9ydCB2ZWhlbWVuY2Ugb2YgYW55IGNh
   // , isUndefined :
 
 };
-
-})();

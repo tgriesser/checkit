@@ -29,7 +29,7 @@ module.exports = {
 
     // Underscore Predicates
     date: '{{label}} должно быть датой',
-    equal: '{{label}} не совпадает с {{var_1}}',
+    equal: '{{label}} должно быть {{var_1}}',
     'boolean': '{{label}} должно быть булевым',
     empty: '{{label}} должно быть пустым',
     array: '{{label}} должно быть массивом',

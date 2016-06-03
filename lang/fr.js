@@ -29,7 +29,7 @@ module.exports = {
 
     // Underscore Predicates
     date: 'Le champ {{label}} doit être une date',
-    equal: 'Le champ {{label}} ne correspond pas à {{var_1}}',
+    equal: 'Le champ {{label}} doit être {{var_1}}',
     'boolean': 'Le champ {{label}} doit être de type "booléen"',
     empty: 'Le champ {{label}} doit être vide',
     array: 'Le champ {{label}} doit être un tableau',

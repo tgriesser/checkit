@@ -2,15 +2,11 @@
 language: node_js
 node_js:
   - "0.12"
+  - "4.x"
+  - "6.x"
 env:
   global:
     - NPM_VERSION="^2.0.0"
-matrix:
-  include:
-    - node_js: "0.8"
-      env: NPM_VERSION="~1.4.0"
-    - node_js: "0.10"
-      env:
 before_install:
   - "npm i -g npm@\"$NPM_VERSION\""
 notifications:
