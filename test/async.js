@@ -381,7 +381,7 @@ describe('Checkit', function() {
       const rulesTest = {
         parameterTest: {
           rule: function(val, param){
-            equal(parameter, param);
+            return equal(parameter, param);
           },
           params: parameter
         }
@@ -393,8 +393,8 @@ describe('Checkit', function() {
       const runContext = 'the context';
       const rulesTest = {
         contextTest: {
-          rule: function(val, params, context){
-            equal(runContext, context);
+          rule: function(val, context){
+            return equal(runContext, context);
           }
         }
       }
@@ -417,7 +417,7 @@ describe('Checkit', function() {
         .then(function() {
           return Promise.reject(new Error('Should not pass'));
         }).catch(function(err) {
-          equal(err.toString(), 'Checkit Errors - email: email must contain tim');
+          equal(err.toString(), 'email: email must contain tim');
         })
         .then(function() {
           return chain.run({email: 'tim@gmail', first_name: 'tim'});
@@ -426,7 +426,7 @@ describe('Checkit', function() {
           return Promise.reject(new Error('Should not pass'));
         })
         .catch(function(err) {
-          equal(err.toString(), 'Checkit Errors - email: email must be a valid email address');
+          equal(err.toString(), 'email: email must be a valid email address');
         })
     });
 

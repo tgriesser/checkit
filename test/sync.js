@@ -388,8 +388,8 @@ describe('checkit - sync', () => {
       const runContext = 'the context';
       const rulesTest = {
         contextTest: {
-          rule: function(val, params, context){
-            equal(runContext, context);
+          rule: function(val, context){
+            return equal(runContext, context);
           }
         }
       }

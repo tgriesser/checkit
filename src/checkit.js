@@ -29,7 +29,7 @@ class Checkit {
   // which resolves with the validated object items, or is rejected
   // with a `Checkit.Error`
   run(target, context) {
-    return asyncValidationRunner(this, target, context).then(result => {
+    return co(asyncValidationRunner(this, target, context)).then(result => {
       if (!_.isEmpty(result.errors)) {
         throw new CheckitError(result.errors)
       }
@@ -182,10 +182,13 @@ function* validationRunner(checkit, target, context = {}, isAsync = false) {
   const validated = {}
   const errors = {}
 
-  function addError(key, {message, label, params}) {
-    const msg = formatMessage(label, message, params)
+  function addError(key, obj, e) {
+    const {message, label, params} = obj
+    const msg = e ? e.message : formatMessage(label, message, params)
     errors[key] = errors[key] || new FieldError(msg, key, single)
-    errors[key].errors.push(new ValidationError(msg))
+    const valError = new ValidationError(msg)
+    if (e) valError.stack = e.stack
+    errors[key].errors.push(valError)
   }
 
   const valKeys = Object.keys(validations)
@@ -231,9 +234,9 @@ function* validationRunner(checkit, target, context = {}, isAsync = false) {
       } finally {
         if (result !== true) continue;
         const c = {validations: validate, options}
-        const val = yield* isAsync
-          ? asyncValidationRunner(c, target, context)
-          : validationRunner(c, target, context)
+        const val = isAsync
+          ? yield* asyncValidationRunner(c, target, context)
+          : yield* validationRunner(c, target, context)
         if (failFast && !_.isEmpty(val.errors)) {
           return val
         }
@@ -241,8 +244,9 @@ function* validationRunner(checkit, target, context = {}, isAsync = false) {
           _.each(val.errors, (v, k) => {
             errors[k] = errors[k] ? errors[k].errors.concat(v.errors) : v
           })
+        } else {
+          _.assign(validated, val.validated)
         }
-        _.assign(validated, val.validated)
       }
     }
   }
@@ -252,11 +256,11 @@ function* validationRunner(checkit, target, context = {}, isAsync = false) {
   }
 }
 
-const asyncValidationRunner = co.wrap(function* (checkit, target, context) {
+function* asyncValidationRunner(checkit, target, context) {
   const iterator = validationRunner(checkit, target, context, true)
   let tmp, returnVal
   while (true) { //eslint-disable-line
-    tmp = iterator.next(tmp.value)
+    tmp = iterator.next(tmp && tmp.value)
     tmp = tmp.value && typeof tmp.value.then === 'function'
       ? yield tmp
       : yield Promise.resolve(tmp)
@@ -266,7 +270,7 @@ const asyncValidationRunner = co.wrap(function* (checkit, target, context) {
     }
   }
   return returnVal
-})
+}
 
 function maybeRethrow(e) {
   if (e instanceof TypeError) {
@@ -589,6 +593,9 @@ function assembleValidation(key, validation, options) {
   }
 
   rule = validation.rule
+  if (_.isString(validation.params)) {
+    params = [validation.params]
+  }
   if (_.isArray(validation.params)) {
     params = validation.params
   }
