@@ -1,22 +1,22 @@
-# Checkit.js
+# checkit.js
 
 A DOM-independent validation library for **Node.js**, **io.js** and the **browser**.
 
-It supports both sync
+It supports both sync and async validations
 
-It allows you to seamlessly validate full javascript objects, defining custom messages, labels, and validations, with full support for asynchronous validations with promises. It supports [conditional validations](#conditional-validations), and has powerful, consistent [error structuring](#checkit-errors) and [utility methods](#error-utility-methods) for manipulating your errors' output any way you can imagine.
+It allows you to seamlessly validate full javascript objects, defining custom messages, labels, and validations, with full support for asynchronous validations with promises. It supports [conditional validations](#conditional-validations), both sync and async validations.
 
 ```js
-var mainRules = Checkit(rules);
+var rules = checkit(rules);
 
-mainRules
-  .run(obj)
+rules
+  .validate(obj)
   .then(function(validatedFields) {
     console.log('The fields: ' + _.keys(validatedFields).join(', ') + ' were validated!');
   })
-  .caught(Checkit.Error, function(err) {
-    $("#errors").html(err.map(function(val, key) {
-      return '<li>' + key + ': ' + val.first().message + '</li>';
+  .catch(checkit.Error, function(err) {
+    $("#errors").html(err.errors.map(function(val) {
+      return '<li>' + key + ': ' + val.errors[0].message + '</li>';
     }).join(''));
   });
 ```
@@ -72,7 +72,7 @@ var body = {
 
 checkit.run(body).then(function(validated) {
   console.log(validated);
-}).catch(Checkit.Error, function(err) {
+}).catch(checkit.Error, function(err) {
   console.log(err.toJSON());
 })
 ```
@@ -100,20 +100,20 @@ var [err, validated] = checkit.validateSync(body)
 
 ```
 
-### Checkit.check(key, value, rules)
+### checkit.check(key, value, rules)
 
 ```js
-Checkit.check('email', email, ['required', 'validEmail'])
+checkit.check('email', email, ['required', 'validEmail'])
   .catch(function(err) {
     console.log(err.message)
   });
 ```
 
-### Checkit.checkSync(key, value, rules)
+### checkit.checkSync(key, value, rules)
 
 ```js
 // ES6...
-var [err, resp] = Checkit.checkSync('email', email, ['required', 'validEmail'])  
+var [err, resp] = checkit.checkSync('email', email, ['required', 'validEmail'])  
 
 if (err) {
 
@@ -405,10 +405,10 @@ You may also use the `context` parameter passed to `run` when using a function o
 }
 ```
 
-Second, you may add a custom validator to the `Checkit.Validator` object's prototype, returning a boolean value or a promise.
+Second, you may add a custom validator to the `checkit.Validator` object's prototype, returning a boolean value or a promise.
 
 ```js
-Checkit.Validator.prototype.unused = function(val, table, column) {
+checkit.Validator.prototype.unused = function(val, table, column) {
   return knex(table).where(column, '=', val).andWhere('id', '<>', this._target.id).then(function(resp) {
     if (resp.length > 0) {
       throw new Error('The ' + table + '.' + column + ' field is already in use.');
@@ -425,23 +425,23 @@ Checkit.Validator.prototype.unused = function(val, table, column) {
 
 One of the main features of `Checkit` is the error handling; By extending the error object with utility methods from underscore, the errors are even easier to work with.
 
-- [Checkit.Error](#checkiterror)
-- [Checkit.FieldError](#checkitfielderror)
-- [Checkit.ValidationError](#checkitvalidationerrror)
+- [checkit.Error](#checkiterror)
+- [checkit.FieldError](#checkitfielderror)
+- [checkit.ValidationError](#checkitvalidationerrror)
 
-### Checkit.Error
+### checkit.Error
 
-The main Error object, `Checkit.Error` is returned from the has several helper methods & properties, as well as a number of utility methods:
+The main Error object, `checkit.Error` is returned from the has several helper methods & properties, as well as a number of utility methods:
 
 #### .errors
 
-The "errors" property of a `Checkit.Error` object is a hash of errors for each of the fields which are considered "invalid" in any way by the validation rules. The keys in this hash are the invalid fields, and the values are [Checkit.FieldError](#checkitfielderror) objects, which in-turn have an `errors` attribute, an array containing errors for each failed rule.
+The "errors" property of a `checkit.Error` object is a hash of errors for each of the fields which are considered "invalid" in any way by the validation rules. The keys in this hash are the invalid fields, and the values are [checkit.FieldError](#checkitfielderror) objects, which in-turn have an `errors` attribute, an array containing errors for each failed rule.
 
 #### .get(key)
 
-The `get` method returns the `Checkit.FieldError` object for a specific key, or `undefined` if one does not exist.
+The `get` method returns the `checkit.FieldError` object for a specific key, or `undefined` if one does not exist.
 
-#### .toString([flat])
+#### .toString()
 
 Useful for debugging, the `toString` method converts the `Checkit` error into a human readable representation of the failed validation. If the `flat` argument is passed as a "truthy" value, it will output only the first `ValidationError` in the `FieldError`; otherwise it will output each validation message in a comma separated string.
 
@@ -449,61 +449,31 @@ Useful for debugging, the `toString` method converts the `Checkit` error into a 
 
 Converts the current error object to a json representation of the error, for easy use/refinement elsewhere. For other methods, such as map, reduce, each, see the [utility methods](#utility-methods) section.
 
-### Checkit.FieldError
+### checkit.FieldError
 
 A `FieldError` is an error that contains all of the sub-errors for the validation of an individual item in the validated hash.
 
 #### fieldError.errors
 
-The `errors` property of a `FieldError` is
+The `errors` property of a `FieldError` is an array of all errors seen for an individual field.
 
-### Checkit.ValidationErrror
+### checkit.ValidationErrror
 
-A `ValidationError` is the result of an individual error in the field rule.
-
-### Error Utility Methods
-
-The following methods are underscore methods proxied to the `Checkit.Error` and `Checkit.FieldError` objects, for easy manipulation of the `.errors` object contained in each.
-
-##### shared (Checkit.Error & FieldError)
-
-- [each](http://underscorejs.org/#each)
-- [forEach](http://underscorejs.org/#each)
-- [map](http://underscorejs.org/#map)
-- [reduce](http://underscorejs.org/#reduce)
-- [reduceRight](http://underscorejs.org/#reduceRight)
-- [find](http://underscorejs.org/#find)
-- [filter](http://underscorejs.org/#filter)
-- [reject](http://underscorejs.org/#reject)
-- [invoke](http://underscorejs.org/#invoke)
-- [toArray](http://underscorejs.org/#toArray)
-- [size](http://underscorejs.org/#size)
-- [shuffle](http://underscorejs.org/#shuffle)
-
-##### Checkit.Error only
-
-- [keys](http://underscorejs.org/#keys)
-- [values](http://underscorejs.org/#values)
-- [pairs](http://underscorejs.org/#pairs)
-- [invert](http://underscorejs.org/#invert)
-- [pick](http://underscorejs.org/#pick)
-- [omit](http://underscorejs.org/#omit)
-
-##### Checkit.FieldError only
-
-- [first](http://underscorejs.org/#first)
-- [initial](http://underscorejs.org/#initial)
-- [rest](http://underscorejs.org/#rest)
-- [last](http://underscorejs.org/#last)
+A `ValidationError` is the result of an individual error in the field rule. If there was an error caught which caused the validation error, as in custom validations
 
 ## Other Helpers
 
-### Checkit.labelTransform(fn)
+### checkit.labelTransform(fn)
 
-The `Checkit.labelTransform` method takes a function that receives the field name and returns a human-readable label for use in error messages.
+The `checkit.labelTransform` method takes a function that receives the field name and returns a human-readable label for use in error messages.
 
 
 ## Change Log
+
+### next
+- TypeError, ReferenceError, and SyntaxErrors are caught & rethrown 
+- Simplify errors, removing utility methods
+- 
 
 ### 0.6.0
 

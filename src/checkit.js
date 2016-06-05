@@ -19,7 +19,8 @@ class Checkit {
       language: checkit.i18n[options.language || checkit.language] || {},
       labels: {},
       messages: {},
-      labelTransform: options.labelTransform || checkit.labelTransform
+      labelTransform: options.labelTransform || checkit.labelTransform,
+      rethrow: maybeRethrow
     }, options)
     this.conditional = [];
     this.validations = prepValidations(validations, this.options);
@@ -178,17 +179,19 @@ function maybeAdd(name, target, type) {
 // Runs the validations on a specified "target".
 function* validationRunner(checkit, target, context = {}, isAsync = false) {
   const {conditional, options, validations} = checkit
-  const {single, failFast} = options
+  const {single, failFast, rethrow} = options
   const validated = {}
   const errors = {}
 
-  function addError(key, obj, e) {
-    const {message, label, params} = obj
-    const msg = e ? e.message : formatMessage(label, message, params)
-    errors[key] = errors[key] || new FieldError(msg, key, single)
-    const valError = new ValidationError(msg)
-    if (e) valError.stack = e.stack
-    errors[key].errors.push(valError)
+  function addError(key, validation, originalError) {
+    const {message, label, params} = validation
+    const finalMessage = originalError
+      ? originalError.message
+      : formatMessage(label, message, params)
+    errors[key] = errors[key] || new FieldError(finalMessage, key, single)
+    errors[key].errors.push(
+      new ValidationError(finalMessage, key, validation, originalError)
+    )
   }
 
   const valKeys = Object.keys(validations)
@@ -208,7 +211,7 @@ function* validationRunner(checkit, target, context = {}, isAsync = false) {
           if (single) break;
         }
       } catch (e) {
-        maybeRethrow(e)
+        rethrow(e)
         addError(key, validation, e)
         if (failFast) {
           return {errors}
@@ -230,7 +233,7 @@ function* validationRunner(checkit, target, context = {}, isAsync = false) {
       try {
         result = yield predicate.call(context, target)
       } catch (e) {
-        maybeRethrow(e)
+        rethrow(e)
       } finally {
         if (result !== true) continue;
         const c = {validations: validate, options}
@@ -273,7 +276,7 @@ function* asyncValidationRunner(checkit, target, context) {
 }
 
 function maybeRethrow(e) {
-  if (e instanceof TypeError) {
+  if (e instanceof TypeError || e instanceof SyntaxError || e instanceof ReferenceError) {
     process.nextTick(() => {
       throw e
     })
@@ -531,7 +534,14 @@ class FieldError extends Err {
 
 }
 
-class ValidationError extends Err {}
+class ValidationError extends Err {
+  constructor(message, key, validation, originalError) {
+    super(message)
+    this.key = key
+    this.validation = validation
+    this.originalError = originalError
+  }
+}
 
 // Assorted Helper Items:
 // --------------------------
@@ -630,12 +640,12 @@ checkit.validators = {
   required,
   minLength,
   maxLength,
+  lessThan,
   greaterThan,
   greaterThanEqualTo,
-  gte: greaterThanEqualTo,
-  lessThan,
-  lte: lessThanEqualTo,
   lessThanEqualTo,
+  gte: greaterThanEqualTo,
+  lte: lessThanEqualTo,
   string,
   numeric
 }
