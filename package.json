@@ -2,13 +2,12 @@
   "name": "checkit",
   "version": "0.6.0",
   "description": "Simple validations for node and the browser.",
-  "main": "server.js",
-  "browser": "browser.js",
+  "main": "index.js",
   "scripts": {
     "test": "mocha -R spec test/index.js",
     "build": "npm run build:main && npm run build:dist",
-    "build:main": "webpack --output-library Checkit --output-library-target umd browser.js dist/checkit.js",
-    "build:dist": "webpack --output-library Checkit --output-library-target umd --optimize-minimize browser.js dist/checkit.min.js"
+    "build:main": "webpack --output-library Checkit --output-library-target umd index.js dist/checkit.js",
+    "build:dist": "webpack --output-library Checkit --output-library-target umd --optimize-minimize index.js dist/checkit.min.js"
   },
   "directories": {
     "test": "test"
