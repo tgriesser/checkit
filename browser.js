@@ -1,1 +1,2 @@
-module.exports = require('./core')(require('lodash'), require('when').Promise)
+var _ = require('./lodash-requires')
+module.exports = require('./core')(_, require('when').Promise)
