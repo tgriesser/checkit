@@ -1,1 +1,1 @@
-module.exports = require('./core')(require('lodash'), require('when').Promise)
+module.exports = require('./core')(require('lodash'), require('bluebird'))
