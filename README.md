@@ -505,6 +505,15 @@ The `Checkit.labelTransform` method takes a function that receives the field nam
 
 ## Change Log
 
+### 0.7.0
+
+- Expect a global `Promise` instance. **Breaking change** #69
+- Add meaningful message for integer validation. #46
+- Add string validation. #58
+- Compatible with Lodash 4.x only. #55
+- More permissive email regex. #61, #68
+- Only bundle required lodash methods. #69
+
 ### 0.6.0
 
 - Separate codepath for server (bluebird) and client (when.js)
