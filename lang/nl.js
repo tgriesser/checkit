@@ -55,6 +55,6 @@ module.exports = {
     uuid: 'Het veld {{label}} moet een geldig uuid zijn',
 
     // If there is no validation provided for an item, use this generic line.
-    fallback: 'Validation for {{label}} did not pass'
+    fallback: 'Validatie van het veld {{label}} mislukt'
   }
 }
