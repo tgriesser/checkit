@@ -23,7 +23,7 @@ module.exports = {
     contains: 'Le champ {{label}} doit contenir {{var_1}}',
     string: 'Le champ {{label}} doit être de type "string"',
     numeric: 'Le champ {{label}} doit être une valeur numérique',
-    matchesField: 'Le champ {{label}} doit doit correspondre exactement à {{var_1}}',
+    matchesField: 'Le champ {{label}} doit correspondre exactement à {{var_1}}',
     different: 'Le champ {{label}} doit être différent de {{var_1}}',
     isPlainObject: 'Le champ {{label}} doit être un "plain object"',
 
@@ -55,6 +55,6 @@ module.exports = {
     uuid: 'Le champ {{label}} doit être un numéro de série valide',
 
     // If there is no validation provided for an item, use this generic line.
-    fallback: 'L\'étape de validation du champ {{label}} a échoué'
+    fallback: 'Validatie van het veld {{label}} mislukt'
   }
 }
