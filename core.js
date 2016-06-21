@@ -72,7 +72,8 @@ Checkit.i18n = {
   en: require('./lang/en'),
   es: require('./lang/es'),
   ru: require('./lang/ru'),
-  fr: require('./lang/fr')
+  fr: require('./lang/fr'),
+  nl: require('./lang/nl')
 }
 
 // The default language for all validations, defaults to "en" which
