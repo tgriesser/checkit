@@ -144,7 +144,13 @@ Runner.prototype.run = function(target, context) {
       var pending = []
       _.each(validationHash, function(validations, key) {
         _.each(validations, function(validation) {
-          pending.push(processItemAsync(runner, validation, key, context).catch(addError(errors, key, validation)))
+          pending.push(processItemAsync(runner, validation, key, context)
+            .then(function(result) {
+              if (_.isBoolean(result) && result === false) {
+                throw new ValidationError(runner.checkit.getMessage(validation, key));
+              }
+            })
+            .catch(addError(errors, key, validation)))
         })
       })
       return Promise.all(pending)
