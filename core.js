@@ -175,7 +175,7 @@ function addVerifiedConditional(validations, conditional) {
 // either by returning `true` or a fulfilled promise.
 function checkConditional(runner, conditional) {
   try {
-    return conditional[1].call(runner, runner.target);
+    return conditional[1].call(runner, runner.target, runner.context);
   } catch (e) {}
 }
 
