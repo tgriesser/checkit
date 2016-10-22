@@ -405,6 +405,22 @@ describe('Checkit - sync', function() {
 
   });
 
+  describe('conditional items that depend on context', function() {
+
+    it('passes the context to the conditional', function() {
+      var context = { foo: 'my context', bar: 'another field' };
+      var res = null;
+      Checkit({})
+      .maybe({}, function(item, context) { 
+        res = context;
+      })
+      .runSync({}, context);
+      deepEqual(res, context);
+    });
+  });
+
+
+
   describe('nested items', function(){
     it('validates for nested items', function(){
       return Checkit({"info.email": ['required', 'email']}).runSync({info: {email: "joe@gmail.com"}})
