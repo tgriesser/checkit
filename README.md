@@ -103,7 +103,7 @@ var [err, validated] = checkit.validateSync(body)
 ### Checkit.check(key, value, rules)
 
 ```js
-Checkit.check('email', email, ['required', 'validEmail'])
+Checkit.check('email', email, ['required', 'email'])
   .catch(function(err) {
     console.log(err.message)
   });
@@ -113,7 +113,7 @@ Checkit.check('email', email, ['required', 'validEmail'])
 
 ```js
 // ES6...
-var [err, resp] = Checkit.checkSync('email', email, ['required', 'validEmail'])  
+var [err, resp] = Checkit.checkSync('email', email, ['required', 'email'])  
 
 if (err) {
 
