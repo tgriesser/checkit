@@ -334,7 +334,7 @@ Then use the `maybe` method to add additional rules:
 
 ### .maybe(rules, handler)
 
-The first of the `maybe` method is the hash of validation fields / settings, similar to the main `Checkit` object. The second argument is a function, evaluated with the object being validated, and if it returns explicitly `true` or with a promise fulfilling with `true`, it will add an additional validator to the `Checkit` object.
+The first of the `maybe` method is the hash of validation fields / settings, similar to the main `Checkit` object. The second argument is a function, evaluated with the object being validated as the first argument and the context passed to run (if any) as a second argument. If it returns explicitly `true` or with a promise fulfilling with `true`, it will add an additional validator to the `Checkit` object.
 
 This method makes building complex conditional validations a snap.
 
@@ -345,6 +345,17 @@ checkit.maybe({authorBio: ['required', 'max:500']}, function(input) {
   return input.books > 5;
 });
 ```
+
+
+```js
+// In this example, the "authorBio" field is only required if specified by the context
+checkit.maybe({authorBio: ['required', 'max:500']}, function(input, context) {
+  return context.requireBio;
+});
+
+checkit.run(someObj, { requireBio: true })
+```
+
 
 ## Advanced &amp; Custom Validators:
 

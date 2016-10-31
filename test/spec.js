@@ -426,8 +426,23 @@ describe('Checkit', function() {
 
     it('matches', function() {
       return Checkit({matchesEmail: ['matchesField:email']}).validate(testBlock)
-    })
+    });
+  });
 
+  describe('conditional items that depend on context', function() {
+
+    it('passes the context to the conditional', function() {
+      var context = { foo: 'my context', bar: 'another field' };
+      var res = null;
+      return Checkit({})
+      .maybe({}, function(item, context) { 
+        res = context;
+      })
+      .run({}, context)
+      .then(function() {
+        deepEqual(res, context);
+      });
+    });
   });
 
   describe('nested items', function(){
