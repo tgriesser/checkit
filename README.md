@@ -320,7 +320,7 @@ if (err) {
 
 ## Conditional Validations
 
-Sometimes you may wish to require a given field conditionally, for example require a field only if another field has a greater value than 100. Or you may need two fields to have a given value only when another field is present. Adding these validation rules doens't have to be a pain. First, create a `Checkit` instance with the main rules that never change:
+Sometimes you may wish to require a given field conditionally, for example require a field only if another field has a greater value than 100. Or you may need two fields to have a given value only when another field is present. Adding these validation rules doesn't have to be a pain. First, create a `Checkit` instance with the main rules that never change:
 
 ```js
 var checkit = new Checkit({
