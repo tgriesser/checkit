@@ -75,7 +75,7 @@ return {
   uuidv1: uuid.v1(),
   uuidv4: uuid.v4(),
 
-  hexadecimal: '0X8139df1d82914b3c399695e67f506640'
+  hexadecimal: '0X8139df1d82914b3c399695e67f506640',
 
   base64: 'TWFuIGlzIGRpc3Rpbmd1aXNoZWQsIG5vdCBvbmx5IGJ5IGhpcyByZWFzb24sIGJ1dCBieSB0aGlzI\
 HNpbmd1bGFyIHBhc3Npb24gZnJvbSBvdGhlciBhbmltYWxzLCB3aGljaCBpcyBhIGx1c3Qgb2YgdGhlIG1pbmQsIHRo\
