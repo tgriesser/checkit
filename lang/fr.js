@@ -53,7 +53,6 @@ module.exports = {
     base64: 'Le champ {{label}} doit être une chaîne en base64',
     luhn: 'Le champ {{label}} doit être un numéro de carte de crédit valide',
     uuid: 'Le champ {{label}} doit être un numéro de série valide',
-    hexadecimal: 'Le champ ID doit être un hexadécimal valide',
 
     // If there is no validation provided for an item, use this generic line.
     fallback: 'L\'étape de validation du champ {{label}} a échoué'
