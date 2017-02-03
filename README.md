@@ -314,6 +314,10 @@ if (err) {
       <td>uuid</td>
       <td>Passes for a validly formatted UUID.</td>
     </tr>
+    <tr>
+      <td>hexadecimal</td>
+      <td>Passes for a validly hexadecimal string.</td>
+    </tr>
   </tbody>
 </table>
 

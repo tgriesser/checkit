@@ -246,6 +246,16 @@ describe('Checkit', function() {
 
     });
 
+    describe('hexadecimal', function() {
+
+      it('should pass for hexadecimal string', function() {
+        return Checkit({
+          hexadecimal: ['hexadecimal']
+        }).run(testBlock)
+      });
+
+    });
+
     describe('url', function() {
 
       it('should validate a http url', function() {
@@ -435,7 +445,7 @@ describe('Checkit', function() {
       var context = { foo: 'my context', bar: 'another field' };
       var res = null;
       return Checkit({})
-      .maybe({}, function(item, context) { 
+      .maybe({}, function(item, context) {
         res = context;
       })
       .run({}, context)
