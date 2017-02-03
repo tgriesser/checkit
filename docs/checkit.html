@@ -852,7 +852,8 @@ otherwise using a simple underscore fallback.</p>
     natural: <span class="regexp">/^[0-9]+$/i</span>,
     naturalNonZero: <span class="regexp">/^[1-9][0-9]*$/i</span>,
     url: <span class="regexp">/^((http|https):\/\/(\w+:{0,1}\w*@)?(\S+)|)(:[0-9]+)?(\/|\/([\w#!:.?+=&amp;%@!\-\/]))?$/</span>,
-    uuid: <span class="regexp">/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i</span>
+    uuid: <span class="regexp">/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i</span>,
+    hexadecimal: <span class="regexp">/^(0[x])?[0-9a-f]+$/i</span>
   };</pre></div></div>
             
         </li>
@@ -1135,7 +1136,8 @@ add anything to this object.</p>
         ipv4: <span class="string">'The {{label}} must be a valid IPv4 string'</span>,
         base64: <span class="string">'The {{label}} must be a base64 string'</span>,
         luhn: <span class="string">'The {{label}} must be a valid credit card number'</span>,
-        uuid: <span class="string">'The {{label}} must be a valid uuid'</span>,</pre></div></div>
+        uuid: <span class="string">'The {{label}} must be a valid uuid'</span>,
+        hexadecimal: <span class="string">'The {{label}} must be a valid hexadecimal string'</span>,</pre></div></div>
             
         </li>
         
