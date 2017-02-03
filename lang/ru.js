@@ -52,6 +52,7 @@ module.exports = {
     base64: '{{label}} должно быть валидной base64 строкой',
     luhn: '{{label}} должно быть валидным номером кредитной карты',
     uuid: '{{label}} должно быть валидным уникальным идентификатором (uuid)',
+    hexadecimal: '{{label}} Идентификатор должен быть допустимым шестнадцатеричным',
 
     // If there is no validation provided for an item, use this generic line.
     fallback: '{{label}} не прошло валидацию'

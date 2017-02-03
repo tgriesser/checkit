@@ -53,6 +53,7 @@ module.exports = {
     base64: 'Het veld {{label}} moet een base64 tekenreeks zijn',
     luhn: 'Het veld {{label}} moet een geldige creditcard nummer zijn',
     uuid: 'Het veld {{label}} moet een geldig uuid zijn',
+    hexadecimal: 'Het veld {{label}} moet een geldig hexadecimale zijn',
 
     // If there is no validation provided for an item, use this generic line.
     fallback: 'Validatie van het veld {{label}} mislukt'

@@ -39,6 +39,7 @@ module.exports = {
     base64: '{{label}} debe de ser una cadena en base64',
     luhn: '{{label}} debe de ser un número válido de tarjeta de crédito',
     uuid: '{{label}} debe de ser un uuid válido',
+    hexadecimal: '{{label}} debe de ser un hexadecimal válido',
 
     // If there is no validation provided for an item, use this generic line.
     fallback: 'Las validaciones para {{label}} fallaron'
