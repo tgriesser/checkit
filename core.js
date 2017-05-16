@@ -19,6 +19,7 @@ function Checkit(validations, options) {
   this.language       = Checkit.i18n[options.language || Checkit.language] || {};
   this.labelTransform = options.labelTransform || Checkit.labelTransform
   this.validations    = prepValidations(validations || {});
+  this.mode = options.mode;
 }
 
 Checkit.VERSION = '0.6.0';
@@ -198,7 +199,7 @@ function processItem(runner, currentValidation, key, context) {
 
   // If the rule isn't an existence / required check, return
   // true if the value doesn't exist.
-  if (rule !== 'accepted' && rule !== 'exists' && rule !== 'required') {
+  if (runner.checkit.mode !== 'strict' && rule !== 'accepted' && rule !== 'exists' && rule !== 'required') {
     if (value === '' || value == null) return;
   }
   var result = runRule(runner.validator, runner, rule, params)
