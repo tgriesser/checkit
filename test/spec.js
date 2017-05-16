@@ -453,4 +453,13 @@ describe('Checkit', function() {
     });
   });
 
+  describe('strict mode', function () {
+	  it('should run all rules in strict mode', function(){
+		  var arr = Checkit({
+			  "emptyString": ['exactLength:1']
+		  }, {mode: 'strict'}).runSync({emptyString: ''})
+		  assert(arr[0] instanceof Checkit.Error)
+	  });
+  });
+
 });
