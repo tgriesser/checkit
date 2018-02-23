@@ -421,7 +421,19 @@ var Regex = Checkit.Regex = {
   luhn: /^(?:4[0-9]{12}(?:[0-9]{3})?|5[1-5][0-9]{14}|6(?:011|5[0-9][0-9])[0-9]{12}|3[47][0-9]{13}|3(?:0[0-5]|[68][0-9])[0-9]{11}|(?:2131|1800|35\d{3})\d{11})$/,
   natural: /^[0-9]+$/i,
   naturalNonZero: /^[1-9][0-9]*$/i,
-  url: /^((http|https):\/\/(\w+:{0,1}\w*@)?(\S+)|)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-\/]))?$/,
+  url: { 'test': function(str) {
+                   // The url regex is vulnerable to catastrophic backtracking: O(n^2).
+                   // It blows up around 50K+ chars, so enforce a much lower limit.
+                   // 2K is about the de facto limit in web browsers.
+                   // https://stackoverflow.com/questions/417142/what-is-the-maximum-length-of-a-url-in-different-browsers
+                   const MAX_URL_LEN = 5000;
+                   if (MAX_URL_LEN < str.length) {
+                      return false;
+                   }
+                   const urlRE = /^((http|https):\/\/(\w+:?\w*@)?(\S+)|)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-\/]))?$/;
+                   return urlRE.test(str);
+                 }
+	},
   uuid: /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
 };
 
