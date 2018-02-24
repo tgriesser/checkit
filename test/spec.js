@@ -260,6 +260,14 @@ describe('Checkit', function() {
         }).run(testBlock)
       });
 
+      it('should (quickly) reject an invalid REDOS url', function() {
+        return Checkit({
+          urlREDOS: ['url']
+        }).run(testBlock).catch(function() {
+          return true;
+        }).then(function(val) { equal(val, true) })
+      }).timeout(1000);
+
     });
 
     describe('misc', function() {
