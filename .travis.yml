@@ -7,9 +7,9 @@ env:
     - NPM_VERSION="^3.0.0"
 matrix:
   include:
-    - node_js: "0.12"
+    - node_js: "6"
       env:
-    - node_js: "4"
+    - node_js: "8"
       env:
 before_install:
   - "npm i -g npm@\"$NPM_VERSION\""
