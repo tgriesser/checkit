@@ -428,27 +428,64 @@ var Regex = Checkit.Regex = {
 // Error Types
 // ---------------
 
+function captureStackTrace(err, constructor) {
+  if (Error.captureStackTrace) {
+    Error.captureStackTrace(err, constructor);
+  } else {
+    var stack = new Error(message).stack;
+    if (stack) {
+      stack = stack.split('\n');
+      // remove calls to `captureStackTrace` and `CustomError` constructor
+      stack = stack.splice(1, 2);
+      stack = stack.join('\n');
+      Object.defineProperty(err, 'stack', {
+        value: stack,
+        writable: true,
+        enumerable: false,
+        configurable: true
+      });
+    }
+  }
+}
+
+function makeError(name, callback) {
+  function CustomError(message) {
+    this.message = message;
+    if (callback) {
+      callback.apply(this, arguments);
+    }
+    captureStackTrace(this, CustomError);
+  }
+  CustomError.prototype = new Error();
+  Object.defineProperty(CustomError, 'name', {
+    value: name,
+    writable: false,
+    enumerable: false,
+    configurable: true
+  });
+  Object.defineProperty(CustomError.prototype, 'name', {
+    value: name,
+    writable: true,
+    enumerable: false,
+    configurable: true
+  });
+  return CustomError;
+}
 
 // An error for an individual "validation", where one or more "validations"
 // make up a single ruleset. These are grouped together into a `FieldError`.
-function ValidationError(message) {
-  this.message = message
-}
-ValidationError.prototype = new Error;
+var ValidationError = makeError('ValidationError');
 ValidationError.prototype.toString = function() {
   return this.message
-}
+};
 
 // An `Error` object specific to an individual field,
 // useful in the `Checkit.check` method when you're only
 // validating an individual field. It contains an "errors"
 // array which keeps track of any falidations
-function FieldError(message) {
-  this.message = message
-  this.errors  = []
-}
-
-FieldError.prototype = new Error;
+var FieldError = makeError('FieldError', function() {
+  this.errors = [];
+});
 
 _.extend(FieldError.prototype, {
 
@@ -474,12 +511,9 @@ _.extend(FieldError.prototype, {
 // An object that inherits from the `Error` prototype,
 // but contains methods for working with the individual errors
 // created by the failed Checkit validation object.
-function CheckitError(message) {
-  this.message = message;
-  this.errors  = {}
-}
-
-CheckitError.prototype = new Error();
+var CheckitError = makeError('CheckitError', function() {
+  this.errors = {};
+});
 
 _.extend(CheckitError.prototype, {
 
