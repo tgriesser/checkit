@@ -435,7 +435,7 @@ describe('Checkit', function() {
       var context = { foo: 'my context', bar: 'another field' };
       var res = null;
       return Checkit({})
-      .maybe({}, function(item, context) { 
+      .maybe({}, function(item, context) {
         res = context;
       })
       .run({}, context)
@@ -450,6 +450,15 @@ describe('Checkit', function() {
       return Checkit({
         "info.email": ['required', 'email']
       }).run({info: {email: "joe@gmail.com"}})
+    });
+  });
+
+  describe('stack traces', function(){
+    it('sets the stack trace correctly', function(){
+      return Checkit({ email: ['email'] }).run({ email: 'tim@tgriesser' }).catch(function(err) {
+        equal(err instanceof Checkit.Error, true);
+        equal(/CheckitError: 1 invalid values/.test(err.stack), true);
+      });
     });
   });
 
